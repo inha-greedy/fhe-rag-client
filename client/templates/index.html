@@ -153,24 +153,50 @@
         padding: 10px;
         box-sizing: border-box;
       }
+
       .messages {
         flex-grow: 1;
         overflow-y: auto;
-        height: 20vh;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
       }
-      .message {
-        padding: 5px 10px;
-        margin: 5px 0;
-        border: 1px solid #bbb;
-        border-radius: 10px;
+
+      .message-container {
+        display: flex;
+        align-items: flex-start;
         max-width: 80%;
+        margin: 5px;
       }
-      .message.human {
+      .message-icon {
+        font-size: 24px;
+        margin: 6.5px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center; /* 수직 중앙 정렬 */
+        flex-shrink: 0; /* 아이콘 크기 고정 */
+      }
+      .message-bubble {
+        padding: 12px 18px;
+        border-radius: 10px;
+        word-wrap: break-word;
+        max-width: 83%;
+        border: 1px solid #bbb;
+      }
+      .message-container.human {
         align-self: flex-end;
+      }
+      .message-icon.bot {
+        width: 30px;
+        height: 30px;
+        background-image: url("https://avatars.githubusercontent.com/u/165638702?s=200&v=4");
+        background-size: cover;
+        border-radius: 50%;
+      }
+      .message-bubble.human {
         background-color: #e0ffde;
       }
-      .message.bot {
-        align-self: flex-start;
+      .message-bubble.bot {
         background-color: #edf7ff;
       }
       .input-container {
@@ -370,23 +396,44 @@
 
       function addUserMessage(msg) {
         const chatMessages = document.getElementById("chatMessages");
-        const userMessageDiv = document.createElement("div");
-        userMessageDiv.classList.add("message", "human");
-        userMessageDiv.textContent = `Human: ${msg}`;
-        chatMessages.appendChild(userMessageDiv);
-        // Scroll to the bottom of the chat window
+        const messageContainer = document.createElement("div");
+        messageContainer.classList.add("message-container", "human");
+
+        // const messageIcon = document.createElement("div");
+        // messageIcon.classList.add("message-icon");
+        // messageIcon.textContent = "👤";
+
+        const messageBubble = document.createElement("div");
+        messageBubble.classList.add("message-bubble", "human");
+        messageBubble.textContent = msg;
+
+        messageContainer.appendChild(messageBubble);
+        // messageContainer.appendChild(messageIcon);
+        chatMessages.appendChild(messageContainer);
+
+        // 스크롤 위치 조정
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }
 
       function addBotMessage(msg) {
-        const botMessageDiv = document.createElement("div");
-        botMessageDiv.classList.add("message", "bot");
-        botMessageDiv.textContent = `AI Chatbot: ${msg}`;
-        chatMessages.appendChild(botMessageDiv);
-        // Scroll to the bottom of the chat window
+        const chatMessages = document.getElementById("chatMessages");
+        const messageContainer = document.createElement("div");
+        messageContainer.classList.add("message-container", "bot");
+
+        // const messageIcon = document.createElement("div");
+        // messageIcon.classList.add("message-icon");
+
+        const messageBubble = document.createElement("div");
+        messageBubble.classList.add("message-bubble", "bot");
+        messageBubble.textContent = msg;
+
+        // messageContainer.appendChild(messageIcon);
+        messageContainer.appendChild(messageBubble);
+        chatMessages.appendChild(messageContainer);
+
+        // 스크롤 위치 조정
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }
-
       function sendRequest(formData, uri, log) {
         return fetch(CLIENT_HOST_URL + uri, {
           method: "POST",
