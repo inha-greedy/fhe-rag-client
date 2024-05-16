@@ -306,7 +306,7 @@
       }
 
       function sendRequest(formData, uri, log) {
-        return fetch("http://localhost:8000" + uri, {
+        return fetch("http://0.0.0.0:8000" + uri, {
           method: "POST",
           body: formData,
         })
@@ -350,7 +350,7 @@
             const formData = new FormData();
             formData.append("key", file);
 
-            fetch("http://localhost:8000/key", {
+            fetch("http://0.0.0.0:8000/key", {
               method: "POST",
               body: formData,
             })
