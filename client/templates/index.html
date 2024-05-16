@@ -160,6 +160,7 @@
         display: flex;
         flex-direction: column;
         padding: 10px;
+        height: 20vh;
       }
 
       .message-container {
@@ -363,6 +364,8 @@
     </div>
     <script>
       const CLIENT_HOST_URL = "http://" + window.location.host;
+      const inputField = document.getElementById("chatInput");
+      const chatMessages = document.getElementById("chatMessages");
 
       function onLoadFunction() {
         setTimeout(() => {
@@ -393,46 +396,54 @@
         // Scroll to the bottom of the chat window
         encryptionProgress.scrollTop = encryptionProgress.scrollHeight;
       }
-
       function addUserMessage(msg) {
-        const chatMessages = document.getElementById("chatMessages");
         const messageContainer = document.createElement("div");
         messageContainer.classList.add("message-container", "human");
 
-        // const messageIcon = document.createElement("div");
-        // messageIcon.classList.add("message-icon");
-        // messageIcon.textContent = "👤";
-
         const messageBubble = document.createElement("div");
         messageBubble.classList.add("message-bubble", "human");
-        messageBubble.textContent = msg;
 
         messageContainer.appendChild(messageBubble);
-        // messageContainer.appendChild(messageIcon);
         chatMessages.appendChild(messageContainer);
 
         // 스크롤 위치 조정
         chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // 타이핑 효과 추가
+        typeWriter(msg, messageBubble);
       }
 
       function addBotMessage(msg) {
-        const chatMessages = document.getElementById("chatMessages");
         const messageContainer = document.createElement("div");
         messageContainer.classList.add("message-container", "bot");
 
-        // const messageIcon = document.createElement("div");
-        // messageIcon.classList.add("message-icon");
-
         const messageBubble = document.createElement("div");
         messageBubble.classList.add("message-bubble", "bot");
-        messageBubble.textContent = msg;
 
-        // messageContainer.appendChild(messageIcon);
         messageContainer.appendChild(messageBubble);
         chatMessages.appendChild(messageContainer);
 
         // 스크롤 위치 조정
         chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // 타이핑 효과 추가
+        typeWriter(msg, messageBubble);
+      }
+
+      function typeWriter(text, element, delay = 30) {
+        let index = 0;
+
+        function typeText() {
+          if (index < text.length) {
+            element.textContent += text.charAt(index);
+            index++;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            setTimeout(typeText, delay);
+          }
+        }
+
+        typeText();
       }
       function sendRequest(formData, uri, log) {
         return fetch(CLIENT_HOST_URL + uri, {
@@ -578,7 +589,6 @@
         .addEventListener("click", sendMessage);
 
       function sendMessage() {
-        const inputField = document.getElementById("chatInput");
         const message = inputField.value;
 
         if (message.trim() !== "") {
@@ -589,6 +599,8 @@
           let formData = new FormData();
           formData.append("query", message);
           formData.append("step", 1);
+
+          inputField.disabled = true; // Disable the input field
 
           const encryptionLog =
             "(1/4) Embedded user query and transmitted to storage server.";
@@ -622,13 +634,13 @@
             .then((data) => {
               console.log("Success:", data);
 
-              // Assuming the response contains a field called 'answer'
               addBotMessage(
                 data.answer || "I'm sorry, I didn't understand that."
               );
             })
             .catch((error) => {
               console.error("Error:", error);
+              inputField.disabled = false;
             });
         }
       }
