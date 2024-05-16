@@ -70,7 +70,6 @@ def send_documents_to_server(uri: str, encrypted_documents: List[PyCDocumentDto]
     load_dotenv()
 
     server_url = os.getenv("SERVER_URL")
-    server_url = "http://0.0.0.0:10100"
 
     json = [doc.to_dict() for doc in encrypted_documents]
     response = requests.post(server_url + uri, json=json)

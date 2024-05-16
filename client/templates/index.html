@@ -266,6 +266,8 @@
     </div>
 
     <script>
+      const CLIENT_HOST_URL = "http://" + window.location.host;
+
       function onLoadFunction() {
         setTimeout(() => {
           addLog("CKKS RAG Agent Initialized.");
@@ -306,7 +308,7 @@
       }
 
       function sendRequest(formData, uri, log) {
-        return fetch("http://0.0.0.0:8000" + uri, {
+        return fetch(CLIENT_HOST_URL + uri, {
           method: "POST",
           body: formData,
         })
@@ -350,7 +352,7 @@
             const formData = new FormData();
             formData.append("key", file);
 
-            fetch("http://0.0.0.0:8000/key", {
+            fetch(CLIENT_HOST_URL + "/key", {
               method: "POST",
               body: formData,
             })
