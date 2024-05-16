@@ -115,6 +115,7 @@
         flex-grow: 1;
         overflow-y: auto;
         font-size: 12px;
+        height: 20vh;
       }
       .encryption-progress p {
         margin: 2px 0;
@@ -141,6 +142,7 @@
       .messages {
         flex-grow: 1;
         overflow-y: auto;
+        height: 20vh;
       }
       .message {
         padding: 5px 10px;
@@ -278,6 +280,8 @@
       }
 
       function addLog(msg) {
+        const encryptionProgress = document.getElementById("encryptionProgress");
+
         const now = new Date();
         const YY = String(now.getFullYear()).substring(2, 4);
         const MM = String(now.getMonth() + 1).padStart(2, "0");
@@ -290,6 +294,9 @@
 
         document.getElementById("encryptionProgress").innerHTML +=
           "<p>[" + timestamp + "] " + msg + "</p>";
+
+        // Scroll to the bottom of the chat window
+        encryptionProgress.scrollTop = encryptionProgress.scrollHeight;
       }
 
       function addUserMessage(msg) {
@@ -298,6 +305,8 @@
         userMessageDiv.classList.add("message", "human");
         userMessageDiv.textContent = `Human: ${msg}`;
         chatMessages.appendChild(userMessageDiv);
+        // Scroll to the bottom of the chat window
+        chatMessages.scrollTop = chatMessages.scrollHeight;
       }
 
       function addBotMessage(msg) {
@@ -305,6 +314,8 @@
         botMessageDiv.classList.add("message", "bot");
         botMessageDiv.textContent = `AI Chatbot: ${msg}`;
         chatMessages.appendChild(botMessageDiv);
+        // Scroll to the bottom of the chat window
+        chatMessages.scrollTop = chatMessages.scrollHeight;
       }
 
       function sendRequest(formData, uri, log) {
@@ -499,9 +510,6 @@
               addBotMessage(
                 data.answer || "I'm sorry, I didn't understand that."
               );
-
-              // Scroll to the bottom of the chat window
-              chatMessages.scrollTop = chatMessages.scrollHeight;
             })
             .catch((error) => {
               console.error("Error:", error);
