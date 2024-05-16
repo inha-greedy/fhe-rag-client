@@ -637,6 +637,7 @@
               addBotMessage(
                 data.answer || "I'm sorry, I didn't understand that."
               );
+              inputField.disabled = false;
             })
             .catch((error) => {
               console.error("Error:", error);
