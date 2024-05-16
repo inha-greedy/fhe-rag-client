@@ -3,75 +3,261 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Chatbot</title>
-    <link rel="stylesheet" href="/static/bootstrap.min.css" />
-    <link rel="stylesheet" href="/static/styles.css" />
+    <title>CKKS RAG Agent</title>
+    <style>
+      body {
+        overflow-y: hidden;
+      }
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        height: 90vh;
+        width: 160vh;
+        margin: 0 auto;
+        margin-top: 2vh;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h3 {
+        font-size: 20px;
+        font-weight: bold;
+        padding-bottom: 5px;
+        border-bottom: 2px solid #e5e5e5;
+        margin-bottom: 20px;
+      }
+      h4 {
+        font-size: 16px;
+        font-weight: bold;
+        padding-bottom: 2px;
+        margin: 0 0 10px 0;
+      }
+
+      .header {
+        font-size: 20px;
+        font-weight: bold;
+        padding: 10px 0;
+        border-bottom: 2px solid #e5e5e5;
+        margin-bottom: 20px;
+      }
+      .content {
+        display: flex;
+        flex-grow: 1;
+        justify-content: space-between;
+      }
+      .left-pane {
+        width: 40%;
+        display: flex;
+        flex-direction: column;
+      }
+      .upload-container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      .upload-box {
+        width: 45%;
+        height: 200px;
+        border: 2px dashed #bbb;
+        border-radius: 8px;
+        text-align: center;
+        padding: 20px;
+        box-sizing: border-box;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: border-color 0.3s ease;
+        cursor: pointer;
+      }
+      .upload-box:hover {
+        border-color: #888;
+      }
+      .upload-box .icon {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .icon svg {
+        width: 80%;
+        height: 80%;
+      }
+      .upload-box input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+      }
+      .encryption-progress-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .encryption-progress {
+        background-color: black;
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+        flex-grow: 1;
+        overflow-y: auto;
+        font-size: 12px;
+      }
+      .encryption-progress p {
+        margin: 2px 0;
+      }
+      .right-pane {
+        width: 55%;
+        display: flex;
+        flex-direction: column;
+      }
+      .chatbox-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .chatbox {
+        border: 1px solid #bbb;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        padding: 10px;
+        box-sizing: border-box;
+      }
+      .messages {
+        flex-grow: 1;
+        overflow-y: auto;
+      }
+      .message {
+        padding: 5px 10px;
+        margin: 5px 0;
+        border: 1px solid #bbb;
+        border-radius: 10px;
+        max-width: 80%;
+      }
+      .message.human {
+        align-self: flex-end;
+        background-color: #e0ffde;
+      }
+      .message.bot {
+        align-self: flex-start;
+        background-color: #edf7ff;
+      }
+      .input-container {
+        display: flex;
+        border-top: 1px solid #bbb;
+        padding: 5px;
+      }
+      .input-container input {
+        flex-grow: 1;
+        padding: 8px;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+      }
+      .input-container button {
+        background-color: #28a745;
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        margin-left: 5px;
+        border-radius: 4px;
+        cursor: pointer;
+        display: none;
+      }
+      .input-container button:hover {
+        background-color: #218838;
+      }
+    </style>
   </head>
   <body>
-    <div class="col-md-6">
-      <h2>CKKS-RAG Chatbot</h2>
-    </div>
-    <div class="container-fluid hp-100" style="align-content: center">
-      <div class="row hp-100">
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-body hp-100 d-flex flex-column">
-              <div class="row flex-grow-1">
-                <div class="col-md-12">
-                  <div class="card hp-100">
-                    <div class="card-body">
-                      <h5 class="card-title">Upload Key Pair</h5>
-                      <div class="file-upload hp-100">
-                        <div class="upload-area">Drag files to upload</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+    <div class="container">
+      <div class="header">CKKS RAG Agent</div>
+      <div class="content">
+        <div class="left-pane">
+          <div class="upload-container">
+            <div class="upload-box">
+              <div class="icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect
+                    x="3"
+                    y="11"
+                    width="18"
+                    height="11"
+                    rx="2"
+                    ry="2"
+                  ></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
               </div>
-              <div class="row mt-3" style="height: 30%">
-                <div class="col-md-12">
-                  <div class="card hp-100">
-                    <div class="card-body">
-                      <h5 class="card-title">Upload Document</h5>
-                      <div class="file-upload hp-100">
-                        <div class="upload-area">Drag files to upload</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <h4>Upload Key</h4>
+              <input type="file" id="ckksKeyInput" accept=".zip" />
+              <div id="keyInfo"></div>
+            </div>
+            <div class="upload-box">
+              <div class="icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                  ></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
               </div>
-              <div class="row mt-3" style="height: 20%">
-                <div class="col-md-12">
-                  <div class="card hp-100">
-                    <div class="card-body">
-                      <h5 class="card-title">Encryption Log</h5>
-                      <div class="progress hp-100">
-                        <div class="progress-log"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <h4>Upload Document</h4>
+              <input type="file" id="documentInput" />
+              <div id="documentInfo"></div>
             </div>
           </div>
+          <div class="encryption-progress-container">
+            <h3>Encryption Progress</h3>
+            <div class="encryption-progress" id="encryptionProgress"></div>
+          </div>
         </div>
-        <div class="col-md-6">
-          <div class="hp-100">
-            <h5 class="card-title">AI Chat</h5>
-            <div class="chat-window hp-100">
-              <div class="chat-messages">
-                <div class="message client">Client: Hello world!</div>
-                <div class="message bot">
-                  AI Chatbot: Hello! How can I help you?
-                </div>
-              </div>
-              <div class="chat-input">
+        <div class="right-pane">
+          <div class="chatbox-container">
+            <h3>Chat with Document</h3>
+            <div class="chatbox">
+              <div class="messages" id="chatMessages"></div>
+              <div class="input-container">
                 <input
                   type="text"
-                  class="form-control"
-                  placeholder="Type your Question ..."
+                  placeholder="Type your message ..."
+                  id="chatInput"
                 />
-                <button class="btn btn-primary">Enter</button>
+                <button id="sendButton">▶</button>
               </div>
             </div>
           </div>
@@ -79,8 +265,241 @@
       </div>
     </div>
 
-    <script src="/static/jquery-3.5.1.slim.min.js"></script>
-    <script src="/static/bootstrap.min.js"></script>
-    <script src="/static/script.js"></script>
+    <script>
+      function onLoadFunction() {
+        setTimeout(() => {
+          addLog("CKKS RAG Agent Initialized.");
+        }, 500);
+        setTimeout(() => {
+          addBotMessage("Hello. How can I help you?");
+        }, 1200);
+      }
+
+      function addLog(msg) {
+        const now = new Date();
+        const YY = String(now.getFullYear()).substring(2, 4);
+        const MM = String(now.getMonth() + 1).padStart(2, "0");
+        const DD = String(now.getDate()).padStart(2, "0");
+        const hh = String(now.getHours()).padStart(2, "0");
+        const mm = String(now.getMinutes()).padStart(2, "0");
+        const ss = String(now.getSeconds()).padStart(2, "0");
+        const timestamp =
+          YY + "-" + MM + "-" + DD + " " + hh + ":" + mm + ":" + ss;
+
+        document.getElementById("encryptionProgress").innerHTML +=
+          "<p>[" + timestamp + "] " + msg + "</p>";
+      }
+
+      function addUserMessage(msg) {
+        const chatMessages = document.getElementById("chatMessages");
+        const userMessageDiv = document.createElement("div");
+        userMessageDiv.classList.add("message", "human");
+        userMessageDiv.textContent = `Human: ${msg}`;
+        chatMessages.appendChild(userMessageDiv);
+      }
+
+      function addBotMessage(msg) {
+        const botMessageDiv = document.createElement("div");
+        botMessageDiv.classList.add("message", "bot");
+        botMessageDiv.textContent = `AI Chatbot: ${msg}`;
+        chatMessages.appendChild(botMessageDiv);
+      }
+
+      function sendRequest(formData, uri, log) {
+        return fetch("http://localhost:8000" + uri, {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(`Success (step ${formData.get("step")}):`, data);
+            addLog(log);
+            return data;
+          })
+          .catch((error) => {
+            console.error(`Error (step ${formData.get("step")}):`, error);
+            throw error;
+          });
+      }
+
+      // CKKS Key Input
+      document
+        .getElementById("ckksKeyInput")
+        .addEventListener("change", function (event) {
+          const file = event.target.files[0];
+          const fileInfoElement = document.getElementById("keyInfo");
+          fileInfoElement.textContent = ""; // 이전 정보 초기화
+
+          if (file) {
+            const fileSize = file.size;
+            let fileSizeString;
+
+            if (fileSize >= 1024 * 1024) {
+              // MB 단위
+              fileSizeString = `${(fileSize / (1024 * 1024)).toFixed(2)} MB`;
+            } else if (fileSize >= 1024) {
+              // KB 단위
+              fileSizeString = `${(fileSize / 1024).toFixed(2)} KB`;
+            } else {
+              // Byte 단위
+              fileSizeString = `${fileSize} B`;
+            }
+
+            fileInfoElement.textContent = `${file.name} (${fileSizeString})`;
+
+            const formData = new FormData();
+            formData.append("key", file);
+
+            fetch("http://localhost:8000/key", {
+              method: "POST",
+              body: formData,
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                console.log("Success:", data);
+
+                const encryptionLog = "CKKS key file uploaded.";
+                addLog(encryptionLog);
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+              });
+          }
+        });
+
+      // Document Input
+      document
+        .getElementById("documentInput")
+        .addEventListener("change", function (event) {
+          const file = event.target.files[0];
+          const fileInfoElement = document.getElementById("documentInfo");
+          fileInfoElement.textContent = ""; // 이전 정보 초기화
+
+          if (file) {
+            const fileSize = file.size;
+            let fileSizeString;
+
+            if (fileSize >= 1024 * 1024) {
+              // MB 단위
+              fileSizeString = `${(fileSize / (1024 * 1024)).toFixed(2)} MB`;
+            } else if (fileSize >= 1024) {
+              // KB 단위
+              fileSizeString = `${(fileSize / 1024).toFixed(2)} KB`;
+            } else {
+              // Byte 단위
+              fileSizeString = `${fileSize} B`;
+            }
+
+            fileInfoElement.textContent = `${file.name} (${fileSizeString})`;
+
+            let formData = new FormData();
+            formData.append("file", file);
+            formData.append("step", 1);
+
+            const encryptionLog = "(1/5) Fetched content from attached file.";
+            sendRequest(formData, "/document", encryptionLog)
+              .then((data) => {
+                formData = new FormData();
+                formData.append("step", 2);
+                const encryptionLog =
+                  "(2/5) Converted context to splitted document.";
+                return sendRequest(formData, "/document", encryptionLog);
+              })
+              .then((data) => {
+                formData = new FormData();
+                formData.append("step", 3);
+                const encryptionLog = "(3/5) Embedded each document.";
+                return sendRequest(formData, "/document", encryptionLog);
+              })
+              .then((data) => {
+                formData = new FormData();
+                formData.append("step", 4);
+                const encryptionLog = "(4/5) Encrypted documents.";
+                return sendRequest(formData, "/document", encryptionLog);
+              })
+              .then((data) => {
+                formData = new FormData();
+                formData.append("step", 5);
+                const encryptionLog =
+                  "(5/5) Transmitted encrypted documents to storage server.";
+                return sendRequest(formData, "/document", encryptionLog);
+              })
+              .catch((error) => console.error("Final error:", error));
+          }
+        });
+
+      document
+        .getElementById("chatInput")
+        .addEventListener("keydown", function (event) {
+          if (event.key === "Enter") {
+            sendMessage();
+          }
+        });
+
+      document
+        .getElementById("sendButton")
+        .addEventListener("click", sendMessage);
+
+      function sendMessage() {
+        const inputField = document.getElementById("chatInput");
+        const message = inputField.value;
+
+        if (message.trim() !== "") {
+          // Add the user's message to the chat window
+          addUserMessage(message);
+          inputField.value = ""; // Clear the input field
+
+          let formData = new FormData();
+          formData.append("query", message);
+          formData.append("step", 1);
+
+          const encryptionLog =
+            "(1/4) Embedded user query and transmitted to storage server.";
+          sendRequest(formData, "/chat", encryptionLog)
+            .then((data) => {
+              formData = new FormData();
+              formData.append("query", message);
+              formData.append("step", 2);
+
+              const encryptionLog = "(2/4) Decrypted similarity list.";
+              return sendRequest(formData, "/chat", encryptionLog);
+            })
+            .then((data) => {
+              formData = new FormData();
+              formData.append("query", message);
+              formData.append("step", 3);
+
+              const encryptionLog =
+                "(3/4) Retrieved context from storage server.";
+              return sendRequest(formData, "/chat", encryptionLog);
+            })
+            .then((data) => {
+              formData = new FormData();
+              formData.append("query", message);
+              formData.append("step", 4);
+
+              const encryptionLog =
+                "(4/4) Constructed prompt and generated response.";
+              return sendRequest(formData, "/chat", encryptionLog);
+            })
+            .then((data) => {
+              console.log("Success:", data);
+
+              // Assuming the response contains a field called 'answer'
+              addBotMessage(
+                data.answer || "I'm sorry, I didn't understand that."
+              );
+
+              // Scroll to the bottom of the chat window
+              chatMessages.scrollTop = chatMessages.scrollHeight;
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        }
+      }
+
+      window.addEventListener("load", onLoadFunction);
+    </script>
   </body>
 </html>

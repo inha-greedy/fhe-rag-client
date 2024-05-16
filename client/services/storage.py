@@ -10,4 +10,10 @@ def set_content(name: str, content):
 
 def get_content(name: str) -> any:
 
-    return STORAGE[name]
+    try:
+        return STORAGE[name]
+
+    except KeyError as e:
+        print(f"Content KeyError :: {e=}")
+
+        return None

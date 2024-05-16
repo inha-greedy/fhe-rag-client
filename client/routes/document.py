@@ -30,9 +30,9 @@ async def set_document(file: UploadFile = None, step: int = Form(...)):
 
     elif step == 3:  # embed each splitted_documents
 
-        str_content = await read_file(file=file)
-        splitted_contents = split_content(str_content=str_content)
-        set_content("s2", splitted_contents)
+        # str_content = await read_file(file=file)
+        # splitted_contents = split_content(str_content=str_content)
+        # set_content("s2", splitted_contents)
 
         ###############
         splitted_contents = get_content("s2")
@@ -41,10 +41,10 @@ async def set_document(file: UploadFile = None, step: int = Form(...)):
 
     elif step == 4:  # encrypt documents
 
-        str_content = await read_file(file=file)
-        splitted_contents = split_content(str_content=str_content)
-        documents = embed_documents(documents=splitted_contents)
-        set_content("s3", documents)
+        # str_content = await read_file(file=file)
+        # splitted_contents = split_content(str_content=str_content)
+        # documents = embed_documents(documents=splitted_contents)
+        # set_content("s3", documents)
         ###############
 
         documents = get_content("s3")
@@ -53,11 +53,11 @@ async def set_document(file: UploadFile = None, step: int = Form(...)):
 
     elif step == 5:  # send List[PyCDocument] to storage-server
 
-        str_content = await read_file(file=file)
-        splitted_contents = split_content(str_content=str_content)
-        documents = embed_documents(documents=splitted_contents)
-        encrypted_documents = encrypt_documents(documents=documents)
-        set_content("s4", encrypted_documents)
+        # str_content = await read_file(file=file)
+        # splitted_contents = split_content(str_content=str_content)
+        # documents = embed_documents(documents=splitted_contents)
+        # encrypted_documents = encrypt_documents(documents=documents)
+        # set_content("s4", encrypted_documents)
         ###############
 
         encrypted_documents = get_content("s4")

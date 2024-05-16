@@ -1,8 +1,10 @@
+import base64
+
 from Pyfhel import PyCtxt
 from pydantic import BaseModel, Field
 import numpy as np
 
-import base64
+from ..services.enc import get_he_context
 
 
 class Document(BaseModel):
@@ -39,9 +41,10 @@ class PyCDocumentDto(BaseModel):
         }
 
     def to_document(self):
+        he = get_he_context()
 
         index = self.index
-        document = PyCtxt.bytestring(base64.b64encode(self.document))
-        embedding = PyCtxt.bytestring(base64.b64encode(self.embedding))
+        document = PyCtxt(pyfhel=he, bytestring=base64.b64decode(self.document))
+        embedding = PyCtxt(pyfhel=he, bytestring=base64.b64decode(self.embedding))
 
         return PyCDocument(index=index, document=document, embedding=embedding)

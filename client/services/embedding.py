@@ -23,5 +23,4 @@ def _normalize_vector(v1: np.ndarray) -> np.ndarray:
     v1_norm = np.linalg.norm(v1)
     v1_normalized = v1 / v1_norm
 
-    print(f"norm={np.linalg.norm(v1_normalized)}")
     return v1_normalized

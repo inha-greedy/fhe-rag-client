@@ -1,5 +1,6 @@
 import os
 from typing import List
+import logging
 
 import base64
 import requests
@@ -40,6 +41,7 @@ def embed_documents(documents: List[Document]) -> List[Document]:
 
         emb = embed_sentence(sentence=document.document)
         document.embedding = emb
+        logging.info("embedding completed, (%s/%s)", document.index + 1, len(documents))
 
     return documents
 
