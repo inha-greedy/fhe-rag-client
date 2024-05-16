@@ -365,6 +365,9 @@
               })
               .catch((error) => {
                 console.error("Error:", error);
+
+                const encryptionLog = "Connection Failed: " + error;
+                addLog(encryptionLog);
               });
           }
         });
@@ -426,7 +429,12 @@
                   "(5/5) Transmitted encrypted documents to storage server.";
                 return sendRequest(formData, "/document", encryptionLog);
               })
-              .catch((error) => console.error("Final error:", error));
+              .catch((error) => {
+                console.error("Error:", error);
+
+                const encryptionLog = "Connection Failed: " + error;
+                addLog(encryptionLog);
+              });
           }
         });
 
