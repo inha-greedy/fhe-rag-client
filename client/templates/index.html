@@ -67,7 +67,7 @@
         justify-content: space-between;
       }
       .left-pane {
-        width: 40%;
+        width: 45%;
         display: flex;
         flex-direction: column;
       }
@@ -135,7 +135,7 @@
         margin: 2px 0;
       }
       .right-pane {
-        width: 55%;
+        width: 50%;
         display: flex;
         flex-direction: column;
       }
@@ -388,7 +388,7 @@
         const mm = String(now.getMinutes()).padStart(2, "0");
         const ss = String(now.getSeconds()).padStart(2, "0");
         const timestamp =
-          YY + "-" + MM + "-" + DD + " " + hh + ":" + mm + ":" + ss;
+          YY + "." + MM + "." + DD + " " + hh + ":" + mm + ":" + ss;
 
         document.getElementById("encryptionProgress").innerHTML +=
           "<p>[" + timestamp + "] " + msg + "</p>";
@@ -453,7 +453,7 @@
           .then((response) => response.json())
           .then((data) => {
             console.log(`Success (step ${formData.get("step")}):`, data);
-            addLog(log);
+            // addLog(log);
             return data;
           })
           .catch((error) => {
@@ -488,7 +488,8 @@
             fileInfoElement.textContent = `${file.name} (${fileSizeString})`;
 
             const formData = new FormData();
-            formData.append("key", file);
+            formData.append("file", file);
+            formData.append("is_new", 0);
 
             fetch(CLIENT_HOST_URL + "/key", {
               method: "POST",
@@ -539,38 +540,52 @@
             formData.append("file", file);
             formData.append("step", 1);
 
-            const encryptionLog = "(1/5) Fetched content from attached file.";
-            sendRequest(formData, "/document", encryptionLog)
+            sendRequest(formData, "/document")
               .then((data) => {
+                const encryptionLog = `(1/5) Content fetched. (file_size: ${data?.file_size} Bytes)`;
+                addLog(encryptionLog);
+
+                //
                 formData = new FormData();
                 formData.append("step", 2);
-                const encryptionLog =
-                  "(2/5) Converted context to splitted document.";
-                return sendRequest(formData, "/document", encryptionLog);
+                return sendRequest(formData, "/document");
               })
               .then((data) => {
+                const encryptionLog = `(2/5) Document splitted. (num_documents: ${data?.num_documents})`;
+                addLog(encryptionLog);
+
+                //
                 formData = new FormData();
                 formData.append("step", 3);
-                const encryptionLog = "(3/5) Embedded each document.";
-                return sendRequest(formData, "/document", encryptionLog);
+                return sendRequest(formData, "/document");
               })
               .then((data) => {
+                const encryptionLog = `(3/5) Document embedded. (avg_embed_time: ${data.avg_embed_time} s)`;
+                addLog(encryptionLog);
+
+                //
                 formData = new FormData();
                 formData.append("step", 4);
-                const encryptionLog = "(4/5) Encrypted documents.";
-                return sendRequest(formData, "/document", encryptionLog);
+                return sendRequest(formData, "/document");
               })
               .then((data) => {
+                const encryptionLog = `(4/5) Documents encrypted. (avg_encrypt_time: ${data.avg_encrypt_time} s)`;
+                addLog(encryptionLog);
+
+                //
                 formData = new FormData();
                 formData.append("step", 5);
+                return sendRequest(formData, "/document");
+              })
+              .then((data) => {
                 const encryptionLog =
-                  "(5/5) Transmitted encrypted documents to storage server.";
-                return sendRequest(formData, "/document", encryptionLog);
+                  "(5/5) Documents transmitted to storage server.";
+                addLog(encryptionLog);
               })
               .catch((error) => {
                 console.error("Error:", error);
 
-                const encryptionLog = "Connection Failed: " + error;
+                const encryptionLog = `Connection Failed: ${error}`;
                 addLog(encryptionLog);
               });
           }
@@ -602,42 +617,54 @@
 
           inputField.disabled = true; // Disable the input field
 
-          const encryptionLog =
-            "(1/4) Embedded user query and transmitted to storage server.";
-          sendRequest(formData, "/chat", encryptionLog)
+          sendRequest(formData, "/chat")
             .then((data) => {
+              const encryptionLog =
+                "(1/4) Embedded user query and transmitted to storage server.";
+              addLog(encryptionLog);
+
+              //
               formData = new FormData();
               formData.append("query", message);
               formData.append("step", 2);
 
-              const encryptionLog = "(2/4) Decrypted similarity list.";
-              return sendRequest(formData, "/chat", encryptionLog);
+              return sendRequest(formData, "/chat");
             })
             .then((data) => {
+              const encryptionLog = "(2/4) Decrypted similarity list.";
+              addLog(encryptionLog);
+
+              //
               formData = new FormData();
               formData.append("query", message);
               formData.append("step", 3);
 
-              const encryptionLog =
-                "(3/4) Retrieved context from storage server.";
-              return sendRequest(formData, "/chat", encryptionLog);
+              return sendRequest(formData, "/chat");
             })
             .then((data) => {
+              const encryptionLog =
+                "(3/4) Retrieved context from storage server.";
+              addLog(encryptionLog);
+
+              //
               formData = new FormData();
               formData.append("query", message);
               formData.append("step", 4);
 
-              const encryptionLog =
-                "(4/4) Constructed prompt and generated response.";
-              return sendRequest(formData, "/chat", encryptionLog);
+              return sendRequest(formData, "/chat");
             })
             .then((data) => {
-              console.log("Success:", data);
+              const encryptionLog =
+                "(4/4) Constructed prompt and generated response.";
+
+              addLog(encryptionLog);
 
               addBotMessage(
                 data.answer || "I'm sorry, I didn't understand that."
               );
               inputField.disabled = false;
+
+              //
             })
             .catch((error) => {
               console.error("Error:", error);

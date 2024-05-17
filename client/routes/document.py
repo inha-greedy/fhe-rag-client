@@ -19,14 +19,24 @@ async def set_document(file: UploadFile = None, step: int = Form(...)):
 
     if step == 1:  # read document
 
-        str_content = await read_file(file=file)
+        str_content, size = await read_file(file=file)
         set_content("s1", str_content)
+
+        return {
+            "file_size": size,
+        }
 
     elif step == 2:  # parse document to make splitted_documents
 
         str_content = get_content("s1")
-        splitted_contents = split_content(str_content=str_content)
+
+        chunk_size = 300
+        splitted_contents = split_content(
+            str_content=str_content, chunk_size=chunk_size
+        )
         set_content("s2", splitted_contents)
+
+        return {"chunk_size": chunk_size, "num_documents": len(splitted_contents)}
 
     elif step == 3:  # embed each splitted_documents
 
@@ -36,8 +46,10 @@ async def set_document(file: UploadFile = None, step: int = Form(...)):
 
         ###############
         splitted_contents = get_content("s2")
-        documents = embed_documents(documents=splitted_contents)
+        documents, avg_embed_time = embed_documents(documents=splitted_contents)
         set_content("s3", documents)
+
+        return {"avg_embed_time": avg_embed_time}
 
     elif step == 4:  # encrypt documents
 
@@ -48,8 +60,10 @@ async def set_document(file: UploadFile = None, step: int = Form(...)):
         ###############
 
         documents = get_content("s3")
-        encrypted_documents = encrypt_documents(documents=documents)
+        encrypted_documents, avg_encrypt_time = encrypt_documents(documents=documents)
         set_content("s4", encrypted_documents)
+
+        return {"avg_encrypt_time": avg_encrypt_time}
 
     elif step == 5:  # send List[PyCDocument] to storage-server
 
@@ -67,4 +81,4 @@ async def set_document(file: UploadFile = None, step: int = Form(...)):
 
         return response
 
-    return "OK"
+    return "NO"

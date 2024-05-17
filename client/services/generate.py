@@ -79,7 +79,7 @@ def generate_answer(query: str, context: str) -> str:
         "stop": stop_sequences,
     }
 
-    response = requests.post(url=url, headers=headers, json=data).json()
+    response = requests.post(url=url, headers=headers, json=data, timeout=120).json()
 
     output_text = response["choices"][0]["text"]
 

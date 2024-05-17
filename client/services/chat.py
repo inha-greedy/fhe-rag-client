@@ -56,9 +56,9 @@ def send_query_and_receive_encrypted_similarity(query: str) -> List[PyCSimilarit
 def make_query_document(query: str):
     splitted_documents = split_content(str_content=query)
 
-    documents = embed_documents(documents=splitted_documents)
+    documents, avg_embed_time = embed_documents(documents=splitted_documents)
 
-    encrypted_documents = encrypt_documents(documents=documents)
+    encrypted_documents, avg_encrypt_time = encrypt_documents(documents=documents)
 
     return encrypted_documents[0]
 

@@ -10,9 +10,10 @@ def get_he_context() -> Pyfhel:
     return get_content("HE")
 
 
-def set_he_context() -> Pyfhel:
+def set_he_context(he: Pyfhel = None) -> Pyfhel:
 
-    he = setup_ckks_context()
+    if he is None:
+        he = setup_ckks_context()
 
     return set_content("HE", he)
 
