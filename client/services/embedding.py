@@ -1,5 +1,5 @@
-from transformers import BertTokenizer, BertModel
 import numpy as np
+from transformers import BertModel, BertTokenizer
 
 
 def embed_sentence(sentence: str) -> np.ndarray:
@@ -12,7 +12,6 @@ def embed_sentence(sentence: str) -> np.ndarray:
 
     encoded = tokenizer.encode_plus(sentence, return_tensors="pt")
     output = model(**encoded)
-
     embedding = output.last_hidden_state[:, 0, :].detach().numpy().flatten()
     n_embedding = _normalize_vector(embedding)
 

@@ -1,106 +1,88 @@
+import os
 from typing import List
 
-from Pyfhel import Pyfhel, PyCtxt
-
-from ..services.document import (
-    split_content,
-    embed_documents,
-    encrypt_documents,
-    send_documents_to_server,
-)
-from ..services.storage import get_content
-from ..services.enc import get_he_context
+import numpy as np
+import requests  # type: ignore # noqa: F401
+from dotenv import load_dotenv
+from Pyfhel import PyCtxt, Pyfhel
 
 from ..models.document import PyCDocumentDto
-from ..models.similarity import Similarity, PyCSimilarity
+from ..models.similarity import PyCSimilarity, PyCSimilarityDto, Similarity
+from ..services.document import embed_documents, encrypt_documents, send_documents, split_content
+from ..services.enc import get_he_context
 
 
-def send_query_and_receive_encrypted_similarity(query: str) -> List[PyCSimilarity]:
+def get_similarities_from_server(query: str) -> List[PyCSimilarity]:
+    encrypted_query_document = _make_query_document(query=query)
 
-    encrypted_query_document = make_query_document(query=query)
+    response = send_documents(
+        uri="/get-similarities",
+        encrypted_documents=[encrypted_query_document],
+    ).json()
 
-    if False:
-
-        response = send_documents_to_server(
-            uri="/emb-query",
-            encrypted_documents=[encrypted_query_document],
-        )
-
-        received_c_top_k = response.json()  # List[PyCSimilarityDto]
-    elif False:
-
-        c_query_document = encrypted_query_document.to_document()
-        stored_encrypted_documents = get_content("s4")
-
-        he = get_he_context()
-
-        received_c_top_k = []
-
-        for doc in stored_encrypted_documents:
-
-            c_score = _compute_cosine_similarity(
-                c_query_document.embedding, doc.to_document().embedding
-            )
-
-            similarity = PyCSimilarity(index=doc.index, score=c_score)
-            received_c_top_k.append(similarity)
-
-    else:
-        received_c_top_k = []
-
-    # received_c_top_k
-
-    return received_c_top_k
+    received_similarities = [PyCSimilarityDto(**item).to_similarity() for item in response]
+    return received_similarities
 
 
-def make_query_document(query: str):
+def decrypt_similarities(
+    encrypted_similarities: List[PyCSimilarity],
+) -> List[Similarity]:
+    he = get_he_context()
+
+    similarities = []
+    for sim in encrypted_similarities:
+        score = he.decrypt(sim.score)
+        similarities.append(Similarity(index=sim.index, score=score[0]))
+
+    return similarities
+
+
+def choose_indices(similarities: List[Similarity], num_context: int) -> List[int]:
+    sorted_similarities = sorted(similarities, key=lambda x: x.score, reverse=True)
+    print(f"{sorted_similarities=}")
+
+    indices: List[int] = [sim.index for sim in sorted_similarities[:num_context]]
+
+    return indices
+
+
+def send_indices_and_receive_contexts(indices: List[int]) -> List[str]:
+    load_dotenv()
+
+    server_url = os.getenv("SERVER_URL") or "EMPTY"
+
+    response = requests.post(server_url + "/get-docs", json=indices, timeout=9).json()
+
+    received_documents = [PyCDocumentDto(**item).to_document() for item in response]
+
+    he = get_he_context()
+    contexts = []
+
+    for doc in received_documents:
+        document = doc.document
+        decrypted_document = decrypt_result(he, document)
+        pure_document = _numpy_to_string(decrypted_document)
+        contexts.append(pure_document)
+
+    return contexts
+
+
+def _make_query_document(query: str):
     splitted_documents = split_content(str_content=query)
 
-    documents, avg_embed_time = embed_documents(documents=splitted_documents)
+    documents, _ = embed_documents(documents=splitted_documents)
 
-    encrypted_documents, avg_encrypt_time = encrypt_documents(documents=documents)
+    encrypted_documents, _ = encrypt_documents(documents=documents)
 
     return encrypted_documents[0]
-
-
-def receive_encrypted_top_k(encrypted_query_document: PyCDocumentDto):
-
-    if False:
-
-        response = send_documents_to_server(
-            uri="/emb-query",
-            encrypted_documents=[encrypted_query_document],
-        )
-
-        received_c_similarity = response.json()  # List[PyCSimilarityDto]
-    else:
-
-        c_query_document = encrypted_query_document.to_document()
-
-        stored_encrypted_documents = get_content("s4")  # List[PyCSimilarityDto]
-        he = get_he_context()
-
-        received_c_similarity = []
-
-        for doc in stored_encrypted_documents:
-
-            c_score = _compute_cosine_similarity(
-                c_query_document.embedding, doc.to_document().embedding
-            )
-
-            similarity = PyCSimilarity(index=doc.index, score=c_score)
-
-            received_c_similarity.append(similarity)
-
-    # received_c_top_k
-
-    return received_c_similarity
 
 
 def decrypt_result(he: Pyfhel, c_result: PyCtxt) -> float:
     return he.decrypt(c_result)
 
 
-def _compute_cosine_similarity(ctxt_v1: PyCtxt, ctxt_v2: PyCtxt) -> PyCtxt:
-    c_result = ctxt_v1 @ ctxt_v2
-    return c_result
+def _numpy_to_string(numpy_to_convert: np.ndarray) -> str:
+    decrypted_str = "".join(
+        [chr(int(round(c))) for c in numpy_to_convert if chr(int(round(c))) != "\x00"]
+    )
+    return decrypted_str

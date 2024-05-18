@@ -26,7 +26,6 @@ app.add_middleware(
 BASE_DIR = Path(__file__).resolve().parent
 
 # 정적 파일 디렉터리 설정
-app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 app.include_router(chat_router)
 app.include_router(document_router)
 app.include_router(key_router)

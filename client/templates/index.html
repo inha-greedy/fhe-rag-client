@@ -368,12 +368,29 @@
       const chatMessages = document.getElementById("chatMessages");
 
       function onLoadFunction() {
-        setTimeout(() => {
-          addLog("CKKS RAG Agent Initialized.");
-        }, 500);
-        setTimeout(() => {
-          addBotMessage("Hello. How can I help you?");
-        }, 1200);
+        const formData = new FormData();
+        formData.append("is_new", 1);
+
+        fetch(CLIENT_HOST_URL + "/key", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("Success:", data);
+
+            const encryptionLog = "CKKS RAG Agent Initialized.";
+            addLog(encryptionLog);
+          })
+          .then(() => {
+            addBotMessage("Hello. How can I help you?");
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+
+            const encryptionLog = "Storage server not responding.";
+            addLog(encryptionLog);
+          });
       }
 
       function addLog(msg) {
@@ -445,7 +462,7 @@
 
         typeText();
       }
-      function sendRequest(formData, uri, log) {
+      function sendRequest(formData, uri) {
         return fetch(CLIENT_HOST_URL + uri, {
           method: "POST",
           body: formData,
@@ -453,7 +470,6 @@
           .then((response) => response.json())
           .then((data) => {
             console.log(`Success (step ${formData.get("step")}):`, data);
-            // addLog(log);
             return data;
           })
           .catch((error) => {
@@ -610,12 +626,11 @@
           // Add the user's message to the chat window
           addUserMessage(message);
           inputField.value = ""; // Clear the input field
+          inputField.disabled = true; // Disable the input field
 
           let formData = new FormData();
           formData.append("query", message);
           formData.append("step", 1);
-
-          inputField.disabled = true; // Disable the input field
 
           sendRequest(formData, "/chat")
             .then((data) => {

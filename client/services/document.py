@@ -1,13 +1,12 @@
+import base64
+import logging
 import os
 import time
-
 from typing import List, Tuple
-import logging
 
-import base64
-import requests
-from fastapi import UploadFile
+import requests  # type: ignore # noqa: F401
 from dotenv import load_dotenv
+from fastapi import UploadFile
 
 from ..models.document import Document, PyCDocumentDto
 from .embedding import embed_sentence
@@ -24,7 +23,6 @@ async def read_file(file: UploadFile) -> Tuple[str, int]:
 
 
 def split_content(str_content: str, chunk_size: int = 300) -> List[Document]:
-
     docs = []
     index = 0
 
@@ -56,7 +54,6 @@ def embed_documents(documents: List[Document]) -> Tuple[List[Document], float]:
 
 
 def encrypt_documents(documents: List[Document]) -> Tuple[List[PyCDocumentDto], float]:
-
     encrypted_documents = []
     encrypt_times = []
 
@@ -81,13 +78,12 @@ def encrypt_documents(documents: List[Document]) -> Tuple[List[PyCDocumentDto], 
     return encrypted_documents, round(avg_encrypt_time, 3)
 
 
-def send_documents_to_server(uri: str, encrypted_documents: List[PyCDocumentDto]):
-
+def send_documents(uri: str, encrypted_documents: List[PyCDocumentDto]):
     load_dotenv()
 
-    server_url = os.getenv("SERVER_URL")
+    server_url = os.getenv("SERVER_URL") or "EMPTY"
 
     json = [doc.to_dict() for doc in encrypted_documents]
-    response = requests.post(server_url + uri, json=json, timeout=120)
+    response = requests.post(server_url + uri, json=json, timeout=9)
 
     return response

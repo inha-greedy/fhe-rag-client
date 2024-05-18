@@ -1,18 +1,17 @@
 import os
 import zipfile
-import requests
-from requests_toolbelt.multipart.encoder import MultipartEncoder
 
+import requests  # type: ignore # noqa: F401
 from dotenv import load_dotenv
 from Pyfhel import Pyfhel
+from requests_toolbelt.multipart.encoder import MultipartEncoder
 
-from .enc import set_he_context, get_he_context
+from .enc import get_he_context, set_he_context
 
 
 def save_public_key():
-
     he = get_he_context()
-    zip_file_path = "./client/storage/key/public_keys.zip"
+    zip_file_path = "./client/storage/public_keys.zip"
 
     with zipfile.ZipFile(zip_file_path, "w") as zipf:
         zipf.writestr("context.bytes", he.to_bytes_context())
@@ -23,9 +22,8 @@ def save_public_key():
 
 
 def save_all_key():
-
     he = get_he_context()
-    zip_file_path = "./client/storage/key/keys.zip"
+    zip_file_path = "./client/storage/keys.zip"
 
     with zipfile.ZipFile(zip_file_path, "w") as zipf:
         zipf.writestr("context.bytes", he.to_bytes_context())
@@ -36,11 +34,11 @@ def save_all_key():
     print(f"Public, Secret Keys saved to {zip_file_path}")
 
 
-def _clear_storage() -> str:
+def _clear_storage() -> None:
     """
     저장소를 비웁니다.
     """
-    storage_path = "./client/storage/key"
+    storage_path = "./client/storage"
 
     # 기존 디렉토리 및 하위 내용 삭제
     if os.path.exists(storage_path):
@@ -56,20 +54,18 @@ def _clear_storage() -> str:
 
 
 def save_key(contents: bytes) -> None:
-
     _clear_storage()
 
-    key_path = "./client/storage/key/keys.zip"
+    key_path = "./client/storage/keys.zip"
 
     with open(key_path, "wb") as fp:
         fp.write(contents)
 
 
 def load_all_key() -> None:
-
     he = Pyfhel()
 
-    zip_file_path = "./client/storage/key/keys.zip"
+    zip_file_path = "./client/storage/keys.zip"
 
     with zipfile.ZipFile(zip_file_path, "r") as zipf:
         with zipf.open("context.bytes") as f:
@@ -88,10 +84,9 @@ def load_all_key() -> None:
 
 
 def send_public_key_to_server():
-    zip_file_path = "./client/storage/key/public_keys.zip"
+    zip_file_path = "./client/storage/public_keys.zip"
 
     with open(zip_file_path, "rb") as zip_file:
-
         load_dotenv()
 
         server_url = os.getenv("SERVER_URL")
@@ -105,7 +100,7 @@ def send_public_key_to_server():
         headers = {"Content-Type": form_data.content_type}
 
         response = requests.post(
-            server_url + "/key", data=form_data, headers=headers, timeout=120
+            server_url + "/sync-key", data=form_data, headers=headers, timeout=9
         )
 
         return response
