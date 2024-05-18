@@ -1,9 +1,7 @@
 import base64
 
-from Pyfhel import PyCtxt
+from Pyfhel import PyCtxt, Pyfhel
 from pydantic import BaseModel, Field
-
-from ..services.enc import get_he_context
 
 
 class Similarity(BaseModel):
@@ -20,20 +18,16 @@ class PyCSimilarity(BaseModel):
 
 
 class PyCSimilarityDto(BaseModel):
-
     index: int
     score: str
 
     def to_dict(self):
-
         return {
             "index": self.index,
             "score": self.score,
         }
 
-    def to_similarity(self):
-        he = get_he_context()
-
+    def to_similarity(self, he: Pyfhel):
         index = self.index
         score = PyCtxt(pyfhel=he, bytestring=base64.b64decode(self.score))
 

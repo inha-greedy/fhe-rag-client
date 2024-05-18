@@ -9,10 +9,13 @@ from dotenv import load_dotenv
 from fastapi import UploadFile
 from PyPDF2 import PdfReader
 import docx
+import numpy as np
+from Pyfhel import PyCtxt
+
+from .storage import load_he_from_key
 
 from ..models.document import Document, PyCDocumentDto
 from .embedding import embed_sentence
-from .enc import encrypt_document, encrypt_embedding
 
 
 async def read_file(file: UploadFile) -> Tuple[str, int]:
@@ -23,13 +26,15 @@ async def read_file(file: UploadFile) -> Tuple[str, int]:
     if file_extension == "pdf":
         pdf_reader = PdfReader(io.BytesIO(contents))
         str_content = ""
-        for page in range(len(pdf_reader.pages)):
-            str_content += pdf_reader.pages[page].extract_text()
+        for page in pdf_reader.pages:
+            str_content += page.extract_text()
+
     elif file_extension == "docx":
         doc = docx.Document(io.BytesIO(contents))
         str_content = ""
         for para in doc.paragraphs:
             str_content += para.text
+
     else:
         str_content = contents.decode("utf-8")
 
@@ -73,8 +78,8 @@ def encrypt_documents(documents: List[Document]) -> Tuple[List[PyCDocumentDto], 
 
     for document in documents:
         doc_start_time = time.time()
-        enc_doc = encrypt_document(document.document)
-        enc_emb = encrypt_embedding(document.embedding)
+        enc_doc = _encrypt_document(document.document)
+        enc_emb = _encrypt_embedding(document.embedding)
         doc_end_time = time.time()
         doc_encrypt_time = doc_end_time - doc_start_time
         encrypt_times.append(doc_encrypt_time)
@@ -101,3 +106,23 @@ def send_documents(uri: str, encrypted_documents: List[PyCDocumentDto]):
     response = requests.post(server_url + uri, json=json, timeout=9)
 
     return response
+
+
+def _encrypt_document(document: str) -> PyCtxt:
+    emb = _string_to_numpy(document)
+
+    return _encrypt_embedding(emb)
+
+
+def _encrypt_embedding(embedding: np.ndarray) -> PyCtxt:
+    he = load_he_from_key()
+
+    n_slots = he.get_nSlots()
+    ctxt = [he.encrypt(embedding[j : j + n_slots]) for j in range(0, len(embedding), n_slots)]
+
+    return ctxt[0]
+
+
+def _string_to_numpy(str_to_convert: str) -> np.ndarray:
+    arr_str = np.array([ord(c) for c in str_to_convert], dtype=np.float64)
+    return arr_str

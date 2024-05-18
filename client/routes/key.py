@@ -1,34 +1,34 @@
 from fastapi import APIRouter, UploadFile, Form
 
 
-from ..services.enc import set_he_context
-from ..services.key import (
-    save_key,
+from ..services.storage import (
+    save_zipfile,
     save_public_key,
-    load_all_key,
+    save_all_key,
+    load_he_from_key,
     send_public_key_to_server,
+    setup_ckks_context,
 )
 
 key_router = APIRouter()
 
 
 @key_router.post("/key")
-async def set_encryption_key(file: UploadFile = None, is_new: int = Form(...)):
+async def set_encryption_key(file: UploadFile = None, step: int = Form(...)):
+    if step == 1:
+        if file is None:
+            he = setup_ckks_context()
+            save_all_key(he=he)
 
-    if is_new == 0:
-        # 1. byte -> file
-        contents = await file.read()
-        save_key(contents=contents)
+        else:
+            contents = await file.read()
+            save_zipfile(contents=contents)
 
-        # 2. file -> HE (on memory)
-        load_all_key()
-    else:
-        set_he_context()
+        he = load_he_from_key()
+        save_public_key(he=he)
 
-    # 3. HE -> public file
-    save_public_key()
-
-    # 4. public file -> storage-server
-    send_public_key_to_server()
+    elif step == 2:
+        # 2. public file -> storage-server
+        send_public_key_to_server()
 
     return "OK"

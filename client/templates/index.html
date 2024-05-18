@@ -368,27 +368,26 @@
       const chatMessages = document.getElementById("chatMessages");
 
       function onLoadFunction() {
-        const formData = new FormData();
-        formData.append("is_new", 1);
+        let formData = new FormData();
+        formData.append("step", 1);
 
-        fetch(CLIENT_HOST_URL + "/key", {
-          method: "POST",
-          body: formData,
-        })
-          .then((response) => response.json())
+        sendRequest(formData, "/key")
           .then((data) => {
-            console.log("Success:", data);
-
-            const encryptionLog = "CKKS RAG Agent Initialized.";
-            addLog(encryptionLog);
+            //
+            formData = new FormData();
+            formData.append("step", 2);
+            return sendRequest(formData, "/key");
           })
-          .then(() => {
+          .then((data) => {
+            const encryptionLog = `CKKS RAG Agent Initialized.`;
+            addLog(encryptionLog);
+
             addBotMessage("Hello. How can I help you?");
           })
           .catch((error) => {
             console.error("Error:", error);
 
-            const encryptionLog = "Storage server not responding.";
+            const encryptionLog = "storage server not responding.";
             addLog(encryptionLog);
           });
       }
@@ -398,17 +397,18 @@
           document.getElementById("encryptionProgress");
 
         const now = new Date();
-        const YY = String(now.getFullYear()).substring(2, 4);
+        const YY = String(now.getFullYear());
         const MM = String(now.getMonth() + 1).padStart(2, "0");
         const DD = String(now.getDate()).padStart(2, "0");
         const hh = String(now.getHours()).padStart(2, "0");
         const mm = String(now.getMinutes()).padStart(2, "0");
         const ss = String(now.getSeconds()).padStart(2, "0");
         const timestamp =
-          YY + "." + MM + "." + DD + " " + hh + ":" + mm + ":" + ss;
+          YY + "-" + MM + "-" + DD + " " + hh + ":" + mm + ":" + ss;
 
-        document.getElementById("encryptionProgress").innerHTML +=
-          "<p>[" + timestamp + "] " + msg + "</p>";
+        document.getElementById(
+          "encryptionProgress"
+        ).innerHTML += `<p>${timestamp} - ${msg}</p>`;
 
         // Scroll to the bottom of the chat window
         encryptionProgress.scrollTop = encryptionProgress.scrollHeight;
@@ -503,19 +503,22 @@
 
             fileInfoElement.textContent = `${file.name} (${fileSizeString})`;
 
-            const formData = new FormData();
+            let formData = new FormData();
             formData.append("file", file);
-            formData.append("is_new", 0);
+            formData.append("step", 1);
 
-            fetch(CLIENT_HOST_URL + "/key", {
-              method: "POST",
-              body: formData,
-            })
-              .then((response) => response.json())
+            sendRequest(formData, "/key")
               .then((data) => {
-                console.log("Success:", data);
+                const encryptionLog = `(1/2) CKKS key uploaded.`;
+                addLog(encryptionLog);
 
-                const encryptionLog = "CKKS key file uploaded.";
+                //
+                formData = new FormData();
+                formData.append("step", 2);
+                return sendRequest(formData, "/key");
+              })
+              .then((data) => {
+                const encryptionLog = `(2/2) CKKS key synchronized.`;
                 addLog(encryptionLog);
               })
               .catch((error) => {
@@ -595,7 +598,7 @@
               })
               .then((data) => {
                 const encryptionLog =
-                  "(5/5) Documents transmitted to storage server.";
+                  "(5/5) Document transmitted to storage server.";
                 addLog(encryptionLog);
               })
               .catch((error) => {
@@ -635,7 +638,7 @@
           sendRequest(formData, "/chat")
             .then((data) => {
               const encryptionLog =
-                "(1/4) Embedded user query and transmitted to storage server.";
+                "(1/4) Document score received from storage server.";
               addLog(encryptionLog);
 
               //
@@ -646,40 +649,34 @@
               return sendRequest(formData, "/chat");
             })
             .then((data) => {
-              const encryptionLog = "(2/4) Decrypted similarity list.";
+              const encryptionLog = "(2/4) Document score decrypted.";
               addLog(encryptionLog);
 
               //
               formData = new FormData();
               formData.append("query", message);
               formData.append("step", 3);
-
               return sendRequest(formData, "/chat");
             })
             .then((data) => {
               const encryptionLog =
-                "(3/4) Retrieved context from storage server.";
+                "(3/4) Context retrieved from storage server.";
               addLog(encryptionLog);
 
               //
               formData = new FormData();
               formData.append("query", message);
               formData.append("step", 4);
-
               return sendRequest(formData, "/chat");
             })
             .then((data) => {
-              const encryptionLog =
-                "(4/4) Constructed prompt and generated response.";
-
+              const encryptionLog = "(4/4) Answer generated from LLM server.";
               addLog(encryptionLog);
 
-              addBotMessage(
-                data.answer || "I'm sorry, I didn't understand that."
-              );
-              inputField.disabled = false;
+              data.answer ||= "I'm sorry, I didn't understand that.";
 
-              //
+              addBotMessage(data.answer);
+              inputField.disabled = false;
             })
             .catch((error) => {
               console.error("Error:", error);

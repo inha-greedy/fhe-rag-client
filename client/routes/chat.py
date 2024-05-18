@@ -7,7 +7,7 @@ from ..services.chat import (
     send_indices_and_receive_contexts,
 )
 from ..services.generate import generate_answer
-from ..services.storage import set_content, pop_content
+from ..services.session import set_content, pop_content
 
 chat_router = APIRouter()
 

@@ -9,10 +9,12 @@ from Pyfhel import PyCtxt, Pyfhel
 from ..models.document import PyCDocumentDto
 from ..models.similarity import PyCSimilarity, PyCSimilarityDto, Similarity
 from ..services.document import embed_documents, encrypt_documents, send_documents, split_content
-from ..services.enc import get_he_context
+from ..services.storage import load_he_from_key
 
 
 def get_similarities_from_server(query: str) -> List[PyCSimilarity]:
+    he = load_he_from_key()
+
     encrypted_query_document = _make_query_document(query=query)
 
     response = send_documents(
@@ -20,14 +22,14 @@ def get_similarities_from_server(query: str) -> List[PyCSimilarity]:
         encrypted_documents=[encrypted_query_document],
     ).json()
 
-    received_similarities = [PyCSimilarityDto(**item).to_similarity() for item in response]
+    received_similarities = [PyCSimilarityDto(**item).to_similarity(he=he) for item in response]
     return received_similarities
 
 
 def decrypt_similarities(
     encrypted_similarities: List[PyCSimilarity],
 ) -> List[Similarity]:
-    he = get_he_context()
+    he = load_he_from_key()
 
     similarities = []
     for sim in encrypted_similarities:
@@ -47,15 +49,16 @@ def choose_indices(similarities: List[Similarity], num_context: int) -> List[int
 
 
 def send_indices_and_receive_contexts(indices: List[int]) -> List[str]:
+    he = load_he_from_key()
+
     load_dotenv()
 
     server_url = os.getenv("SERVER_URL") or "EMPTY"
 
     response = requests.post(server_url + "/get-docs", json=indices, timeout=9).json()
 
-    received_documents = [PyCDocumentDto(**item).to_document() for item in response]
+    received_documents = [PyCDocumentDto(**item).to_document(he=he) for item in response]
 
-    he = get_he_context()
     contexts = []
 
     for doc in received_documents:
