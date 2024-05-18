@@ -34,25 +34,6 @@ def save_all_key():
     print(f"Public, Secret Keys saved to {zip_file_path}")
 
 
-def _clear_storage() -> None:
-    """
-    저장소를 비웁니다.
-    """
-    storage_path = "./client/storage"
-
-    # 기존 디렉토리 및 하위 내용 삭제
-    if os.path.exists(storage_path):
-        for root, dirs, files in os.walk(storage_path, topdown=False):
-            for file_name in files:
-                os.remove(os.path.join(root, file_name))
-            for dir_name in dirs:
-                os.rmdir(os.path.join(root, dir_name))
-        os.rmdir(storage_path)
-
-    #  디렉토리 재생성
-    os.makedirs(storage_path)
-
-
 def save_key(contents: bytes) -> None:
     _clear_storage()
 
@@ -104,3 +85,22 @@ def send_public_key_to_server():
         )
 
         return response
+
+
+def _clear_storage() -> None:
+    """
+    저장소를 비웁니다.
+    """
+    storage_path = "./client/storage"
+
+    # 기존 디렉토리 및 하위 내용 삭제
+    if os.path.exists(storage_path):
+        for root, dirs, files in os.walk(storage_path, topdown=False):
+            for file_name in files:
+                os.remove(os.path.join(root, file_name))
+            for dir_name in dirs:
+                os.rmdir(os.path.join(root, dir_name))
+        os.rmdir(storage_path)
+
+    #  디렉토리 재생성
+    os.makedirs(storage_path)

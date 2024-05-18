@@ -3,10 +3,12 @@ import logging
 import os
 import time
 from typing import List, Tuple
-
+import io
 import requests  # type: ignore # noqa: F401
 from dotenv import load_dotenv
 from fastapi import UploadFile
+from PyPDF2 import PdfReader
+import docx
 
 from ..models.document import Document, PyCDocumentDto
 from .embedding import embed_sentence
@@ -16,8 +18,20 @@ from .enc import encrypt_document, encrypt_embedding
 async def read_file(file: UploadFile) -> Tuple[str, int]:
     contents = await file.read()
     file_size = os.fstat(file.file.fileno()).st_size
+    file_extension = file.filename.split(".")[-1].lower()
 
-    str_content = contents.decode("utf-8")
+    if file_extension == "pdf":
+        pdf_reader = PdfReader(io.BytesIO(contents))
+        str_content = ""
+        for page in range(len(pdf_reader.pages)):
+            str_content += pdf_reader.pages[page].extract_text()
+    elif file_extension == "docx":
+        doc = docx.Document(io.BytesIO(contents))
+        str_content = ""
+        for para in doc.paragraphs:
+            str_content += para.text
+    else:
+        str_content = contents.decode("utf-8")
 
     return str_content, file_size
 
