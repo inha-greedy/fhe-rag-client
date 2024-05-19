@@ -22,9 +22,7 @@ def pop_content(name: str) -> Any:
     try:
         return CONTENT_MAP.pop(map_name)
 
-    except KeyError as e:
-        print(f"Content KeyError :: {e=}")
-
+    except KeyError:
         return None
 
 

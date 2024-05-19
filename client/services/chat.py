@@ -1,6 +1,6 @@
 import os
-from typing import List
-
+from typing import List, Tuple
+import time
 import numpy as np
 import requests  # type: ignore # noqa: F401
 from dotenv import load_dotenv
@@ -9,7 +9,8 @@ from Pyfhel import PyCtxt, Pyfhel
 from ..models.document import PyCDocumentDto
 from ..models.similarity import PyCSimilarity, PyCSimilarityDto, Similarity
 from ..services.document import embed_documents, encrypt_documents, send_documents, split_content
-from ..services.storage import load_he_from_key
+from ..services.key import load_he_from_key
+from ..services.session import set_content
 
 
 def get_similarities_from_server(query: str) -> List[PyCSimilarity]:
@@ -28,22 +29,36 @@ def get_similarities_from_server(query: str) -> List[PyCSimilarity]:
 
 def decrypt_similarities(
     encrypted_similarities: List[PyCSimilarity],
-) -> List[Similarity]:
+) -> Tuple[List[Similarity], float]:
     he = load_he_from_key()
 
     similarities = []
+    decrypt_times = []
+
     for sim in encrypted_similarities:
-        score = he.decrypt(sim.score)
-        similarities.append(Similarity(index=sim.index, score=score[0]))
+        start_time = time.time()
+        score = he.decrypt(sim.score)[0]
+        end_time = time.time()
+        decrypt_time = end_time - start_time
+        decrypt_times.append(decrypt_time)
 
-    return similarities
+        if score > 2 or score < 0:
+            print("warning - step 2: key sync not matched.")
+            set_content("no_sync", True)
+            return ([], 0.0)
+
+        similarities.append(Similarity(index=sim.index, score=score))
+
+    avg_decrypt_time = sum(decrypt_times) / len(decrypt_times) if decrypt_times else 0.0
+
+    return similarities, round(avg_decrypt_time, 3)
 
 
-def choose_indices(similarities: List[Similarity], num_context: int) -> List[int]:
+def choose_indices(similarities: List[Similarity], top_k: int) -> List[int]:
     sorted_similarities = sorted(similarities, key=lambda x: x.score, reverse=True)
     print(f"{sorted_similarities=}")
 
-    indices: List[int] = [sim.index for sim in sorted_similarities[:num_context]]
+    indices: List[int] = [sim.index for sim in sorted_similarities[:top_k]]
 
     return indices
 
@@ -64,6 +79,7 @@ def send_indices_and_receive_contexts(indices: List[int]) -> List[str]:
     for doc in received_documents:
         document = doc.document
         decrypted_document = decrypt_result(he, document)
+        decrypted_document = decrypted_document[:300]
         pure_document = _numpy_to_string(decrypted_document)
         contexts.append(pure_document)
 
@@ -80,12 +96,23 @@ def _make_query_document(query: str):
     return encrypted_documents[0]
 
 
-def decrypt_result(he: Pyfhel, c_result: PyCtxt) -> float:
+def decrypt_result(he: Pyfhel, c_result: PyCtxt) -> np.ndarray:
     return he.decrypt(c_result)
 
 
 def _numpy_to_string(numpy_to_convert: np.ndarray) -> str:
-    decrypted_str = "".join(
-        [chr(int(round(c))) for c in numpy_to_convert if chr(int(round(c))) != "\x00"]
-    )
+    decrypted_chars = []
+    for num in numpy_to_convert:
+        try:
+            rounded_num = int(round(num))
+            char = chr(rounded_num)
+        except OverflowError:
+            print("warning - step 3: key sync not matched.")
+            set_content("no_sync", True)
+            return "<NO_CONTEXT>"
+
+        if char != "\x00":  # Skip null characters
+            decrypted_chars.append(char)
+    decrypted_str = "".join(decrypted_chars)
+
     return decrypted_str

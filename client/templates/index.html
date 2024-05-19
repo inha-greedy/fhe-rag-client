@@ -368,6 +368,9 @@
       const chatMessages = document.getElementById("chatMessages");
 
       function onLoadFunction() {
+        const encryptionLog = `CKKS Key Synchronizing ...`;
+        addLog(encryptionLog);
+
         let formData = new FormData();
         formData.append("step", 1);
 
@@ -387,7 +390,7 @@
           .catch((error) => {
             console.error("Error:", error);
 
-            const encryptionLog = "storage server not responding.";
+            const encryptionLog = "storage-server not responding.";
             addLog(encryptionLog);
           });
       }
@@ -518,7 +521,7 @@
                 return sendRequest(formData, "/key");
               })
               .then((data) => {
-                const encryptionLog = `(2/2) CKKS key synchronized.`;
+                const encryptionLog = `(2/2) CKKS key synchronized to storage-server.`;
                 addLog(encryptionLog);
               })
               .catch((error) => {
@@ -598,7 +601,7 @@
               })
               .then((data) => {
                 const encryptionLog =
-                  "(5/5) Document transmitted to storage server.";
+                  "(5/5) Document transmitted to storage-server.";
                 addLog(encryptionLog);
               })
               .catch((error) => {
@@ -638,7 +641,7 @@
           sendRequest(formData, "/chat")
             .then((data) => {
               const encryptionLog =
-                "(1/4) Document score received from storage server.";
+                "(1/4) Similarity score received from storage-server.";
               addLog(encryptionLog);
 
               //
@@ -649,7 +652,7 @@
               return sendRequest(formData, "/chat");
             })
             .then((data) => {
-              const encryptionLog = "(2/4) Document score decrypted.";
+              const encryptionLog = `(2/4) Similarity score decrypted. (avg_decrypt_time: ${data.avg_decrypt_time} s)`;
               addLog(encryptionLog);
 
               //
@@ -659,8 +662,7 @@
               return sendRequest(formData, "/chat");
             })
             .then((data) => {
-              const encryptionLog =
-                "(3/4) Context retrieved from storage server.";
+              const encryptionLog = `(3/4) Context retrieved from storage-server.`;
               addLog(encryptionLog);
 
               //
@@ -670,7 +672,7 @@
               return sendRequest(formData, "/chat");
             })
             .then((data) => {
-              const encryptionLog = "(4/4) Answer generated from LLM server.";
+              const encryptionLog = "(4/4) Answer generated from LLM-server.";
               addLog(encryptionLog);
 
               data.answer ||= "I'm sorry, I didn't understand that.";

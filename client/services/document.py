@@ -1,5 +1,3 @@
-import base64
-import logging
 import os
 import time
 from typing import List, Tuple
@@ -9,11 +7,8 @@ from dotenv import load_dotenv
 from fastapi import UploadFile
 from PyPDF2 import PdfReader
 import docx
-import numpy as np
-from Pyfhel import PyCtxt
 
-from .storage import load_he_from_key
-
+from .key import encrypt_document, encrypt_ndarray, ctxt_to_str
 from ..models.document import Document, PyCDocumentDto
 from .embedding import embed_sentence
 
@@ -60,12 +55,12 @@ def embed_documents(documents: List[Document]) -> Tuple[List[Document], float]:
 
     for document in documents:
         doc_start_time = time.time()
-        emb = embed_sentence(sentence=document.document)
+        emb = embed_sentence(sentence=document.model_dump_json(exclude="embedding"))
         document.embedding = emb
         doc_end_time = time.time()
         doc_embed_time = doc_end_time - doc_start_time
         embed_times.append(doc_embed_time)
-        logging.info("embedding completed, (%s/%s)", document.index + 1, len(documents))
+        print(f"embedding completed, ({document.index + 1}/{len(documents)})")
 
     avg_embed_time = sum(embed_times) / len(embed_times) if embed_times else 0.0
 
@@ -78,16 +73,16 @@ def encrypt_documents(documents: List[Document]) -> Tuple[List[PyCDocumentDto], 
 
     for document in documents:
         doc_start_time = time.time()
-        enc_doc = _encrypt_document(document.document)
-        enc_emb = _encrypt_embedding(document.embedding)
+        enc_doc = encrypt_document(document.document)
+        enc_emb = encrypt_ndarray(document.embedding)
         doc_end_time = time.time()
         doc_encrypt_time = doc_end_time - doc_start_time
         encrypt_times.append(doc_encrypt_time)
 
         encrypted_document = PyCDocumentDto(
             index=document.index,
-            document=base64.b64encode(enc_doc.to_bytes()).decode("utf-8"),
-            embedding=base64.b64encode(enc_emb.to_bytes()).decode("utf-8"),
+            document=ctxt_to_str(enc_doc),
+            embedding=ctxt_to_str(enc_emb),
         )
 
         encrypted_documents.append(encrypted_document)
@@ -106,23 +101,3 @@ def send_documents(uri: str, encrypted_documents: List[PyCDocumentDto]):
     response = requests.post(server_url + uri, json=json, timeout=9)
 
     return response
-
-
-def _encrypt_document(document: str) -> PyCtxt:
-    emb = _string_to_numpy(document)
-
-    return _encrypt_embedding(emb)
-
-
-def _encrypt_embedding(embedding: np.ndarray) -> PyCtxt:
-    he = load_he_from_key()
-
-    n_slots = he.get_nSlots()
-    ctxt = [he.encrypt(embedding[j : j + n_slots]) for j in range(0, len(embedding), n_slots)]
-
-    return ctxt[0]
-
-
-def _string_to_numpy(str_to_convert: str) -> np.ndarray:
-    arr_str = np.array([ord(c) for c in str_to_convert], dtype=np.float64)
-    return arr_str

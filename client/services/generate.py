@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 import requests  # type: ignore # noqa: F401
 from dotenv import load_dotenv
@@ -31,7 +32,7 @@ LLAMA2_PROMPT = """<<SYS>>
 LLAMA2_SEQUENCE = ["[INST]", "[/INST]"]
 
 
-def generate_answer(query: str, contexts: list[str]) -> str:
+def generate_answer(query: str, contexts: List[str]) -> str:
     # .env 설정해주세요 (.env.example 참고)
     load_dotenv()
 
@@ -67,7 +68,7 @@ def generate_answer(query: str, contexts: list[str]) -> str:
         "prompt": formatted_prompt,
         "max_tokens": max_tokens,
         "temperature": temperature,
-        "stop": stop_sequences,
+        # "stop": stop_sequences,
     }
 
     response = requests.post(url=url, headers=headers, json=data, timeout=20).json()

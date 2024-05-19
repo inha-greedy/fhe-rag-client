@@ -14,39 +14,43 @@ chat_router = APIRouter()
 
 @chat_router.post("/chat")
 async def chat(query: str = Form(...), step: int = Form(...)):
-    if step == 1:
-        # send embed query to storage-server, and... receive encrypted similarity
-
+    if step == 1:  # send query to storage-server and receive similarities
         encrypted_similarities = get_similarities_from_server(query=query)
 
         print(f"{encrypted_similarities=}")
         set_content("c1", encrypted_similarities)
 
-    elif step == 2:
+    elif step == 2:  # decrypt similarity
         encrypted_similarities = pop_content("c1")
-
-        # decrypt similarity
-        similarities = decrypt_similarities(encrypted_similarities=encrypted_similarities)
+        similarities, avg_time = decrypt_similarities(encrypted_similarities=encrypted_similarities)
 
         print(f"{similarities=}")
         set_content("c2", similarities)
 
-    elif step == 3:
+        return {"avg_decrypt_time": avg_time}
+
+    elif step == 3:  # send similarity and receive encrypted context
         similarities = pop_content("c2")
 
-        # send similarity, and... receive encrypted context
-        num_context = 2
-        indices = choose_indices(similarities=similarities, num_context=num_context)
+        top_k = 2
+        indices = choose_indices(similarities=similarities, top_k=top_k)
         contexts = send_indices_and_receive_contexts(indices=indices)
 
         print(f"{contexts=}")
         set_content("c3", contexts)
 
+        return "OK"
+
     elif step == 4:
+        no_sync = pop_content("no_sync") or False
+
+        if no_sync:
+            return {"answer": "복호화 키 검증에 실패했습니다. 키를 재설정해주세요."}
+
         # make RAG prompt, request generation, and... get answer
         contexts = pop_content("c3") or []
-        answer = generate_answer(query=query, contexts=contexts)
 
+        answer = generate_answer(query=query, contexts=contexts)
         return {"answer": answer}
 
     return "OK"

@@ -25,6 +25,8 @@ async def set_document(file: UploadFile = None, step: int = Form(...)):
 
         chunk_size = 300
         splitted_contents = split_content(str_content=str_content, chunk_size=chunk_size)
+
+        print(f"{splitted_contents=}")
         set_content("d2", splitted_contents)
 
         return {"chunk_size": chunk_size, "num_documents": len(splitted_contents)}
@@ -32,6 +34,7 @@ async def set_document(file: UploadFile = None, step: int = Form(...)):
     elif step == 3:  # embed each splitted_documents
         splitted_contents = pop_content("d2")
         documents, avg_time = embed_documents(documents=splitted_contents)
+
         set_content("d3", documents)
 
         return {"avg_embed_time": avg_time}
@@ -39,6 +42,7 @@ async def set_document(file: UploadFile = None, step: int = Form(...)):
     elif step == 4:  # encrypt documents
         documents = pop_content("d3")
         encrypted_documents, avg_time = encrypt_documents(documents=documents)
+
         set_content("d4", encrypted_documents)
 
         return {"avg_encrypt_time": avg_time}
