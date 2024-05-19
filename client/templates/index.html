@@ -525,6 +525,7 @@
 
       const resetKeyButton = document.getElementById("resetKeyButton");
       resetKeyButton.addEventListener("click", async () => {
+        if (!confirm("sure to reset key?")) return;
         let formData = new FormData();
         formData.append("step", 1);
         const encryptionLog = `Resetting CKKS key ...`;
@@ -552,6 +553,7 @@
       const exportKeyButton = document.getElementById("exportKeyButton");
 
       exportKeyButton.addEventListener("click", async () => {
+        if (!confirm("sure to download key?")) return;
         try {
           const response = await fetch(CLIENT_HOST_URL + "/key", {
             method: "GET",

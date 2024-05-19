@@ -50,7 +50,7 @@ def generate_answer(query: str, contexts: List[str]) -> str:
     model = "gpt-3.5-turbo-instruct"
     max_tokens = 1024
     temperature = 0.6
-    stop_sequences = LLAMA2_SEQUENCE
+    # stop_sequences = LLAMA2_SEQUENCE
 
     context = "\n".join(contexts)
 
