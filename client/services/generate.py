@@ -5,15 +5,13 @@ import requests  # type: ignore # noqa: F401
 from dotenv import load_dotenv
 
 # OpenAI style prompt
-OPENAI_PROMPT = """질문에 답하는 인공지능 어시스턴트입니다. 다음의 문맥 정보를 활용하여 질문에 답변하세요.
-답변할 수 없다면 "모르겠습니다"라고 말하세요. 답변은 최대 3문장으로 간결하게 해주세요.
-
-질문: {question}
-
-문맥: {context}
-
-답변:
-"""
+OPENAI_PROMPT = """Context information is below.
+---------------------
+{context}
+---------------------
+Given the context information and not prior knowledge, answer the query in Korean.
+Query: {question}
+Answer in Korean:"""
 
 # LLaMA-2 style prompt
 LLAMA2_PROMPT = """<<SYS>>
@@ -48,8 +46,8 @@ def generate_answer(query: str, contexts: List[str]) -> str:
         rag_prompt = OPENAI_PROMPT
 
     model = "gpt-3.5-turbo-instruct"
-    max_tokens = 1024
-    temperature = 0.6
+    max_tokens = 512
+    temperature = 0.2
     # stop_sequences = LLAMA2_SEQUENCE
 
     context = "\n".join(contexts)
