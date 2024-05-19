@@ -27,16 +27,6 @@ def save_all_key(he: Pyfhel) -> None:
         zipf.writestr("sec.key.bytes", he.to_bytes_secret_key())
 
 
-def exists_all_key() -> bool:
-    key_path = get_all_key_path()
-    return os.path.exists(key_path)
-
-
-def exists_public_key() -> bool:
-    key_path = get_public_key_path()
-    return os.path.exists(key_path)
-
-
 def save_zipfile(contents: bytes) -> None:
     _clear_storage()
 

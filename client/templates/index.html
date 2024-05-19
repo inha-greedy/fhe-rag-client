@@ -652,7 +652,10 @@
               return sendRequest(formData, "/chat");
             })
             .then((data) => {
-              const encryptionLog = `(2/4) Similarity score decrypted. (avg_decrypt_time: ${data.avg_decrypt_time} s)`;
+              let encryptionLog = `(2/4) Similarity score decrypted. (avg_decrypt_time: ${data.avg_decrypt_time} s)`;
+              if (data.no_sync)
+                encryptionLog =
+                  "(2/4) Cannot decrypt similarity score. (key not matched)";
               addLog(encryptionLog);
 
               //
@@ -662,7 +665,11 @@
               return sendRequest(formData, "/chat");
             })
             .then((data) => {
-              const encryptionLog = `(3/4) Context retrieved from storage-server.`;
+              let encryptionLog = `(3/4) Context retrieved from storage-server.`;
+              if (data.no_sync)
+                encryptionLog =
+                  "(3/4) Cannot decrypt document context. (key not matched)";
+
               addLog(encryptionLog);
 
               //
@@ -672,7 +679,7 @@
               return sendRequest(formData, "/chat");
             })
             .then((data) => {
-              const encryptionLog = "(4/4) Answer generated from LLM-server.";
+              let encryptionLog = "(4/4) Answer generated from LLM-server.";
               addLog(encryptionLog);
 
               data.answer ||= "I'm sorry, I didn't understand that.";

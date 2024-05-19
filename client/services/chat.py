@@ -42,7 +42,7 @@ def decrypt_similarities(
         decrypt_time = end_time - start_time
         decrypt_times.append(decrypt_time)
 
-        if score > 2 or score < 0:
+        if score > 1 + 1 or score < 0 - 1:
             print("warning - step 2: key sync not matched.")
             set_content("no_sync", True)
             return ([], 0.0)

@@ -27,7 +27,10 @@ async def chat(query: str = Form(...), step: int = Form(...)):
         print(f"{similarities=}")
         set_content("c2", similarities)
 
-        return {"avg_decrypt_time": avg_time}
+        no_sync = pop_content("no_sync") or False
+        set_content("no_sync", no_sync)
+
+        return {"avg_decrypt_time": avg_time, "no_sync": no_sync}
 
     elif step == 3:  # send similarity and receive encrypted context
         similarities = pop_content("c2")
@@ -39,7 +42,10 @@ async def chat(query: str = Form(...), step: int = Form(...)):
         print(f"{contexts=}")
         set_content("c3", contexts)
 
-        return "OK"
+        no_sync = pop_content("no_sync") or False
+        set_content("no_sync", no_sync)
+
+        return {"no_sync": no_sync}
 
     elif step == 4:
         no_sync = pop_content("no_sync") or False
