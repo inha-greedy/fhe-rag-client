@@ -41,9 +41,10 @@ def set_user_id(request: Request):
     """
     set user_id
     """
-    origin = request.headers.get("origin")
+    host = request.headers.get("host")
     agent = request.headers.get("user-agent")
-    user_key = f"origin:{origin}::agent:{agent}"
+    user_key = f"host:{host}::agent:{agent}"
+    print(f"{user_key=}")
 
     if user_key not in USER_MAP:
         # sequence를 가져와 업데이트합니다

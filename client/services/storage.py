@@ -18,6 +18,7 @@ def save_public_key(he: Pyfhel) -> None:
 
 def save_all_key(he: Pyfhel) -> None:
     zip_file_path = get_all_key_path()
+    print(f"{zip_file_path=}")
 
     with zipfile.ZipFile(zip_file_path, "w") as zipf:
         zipf.writestr("context.bytes", he.to_bytes_context())
