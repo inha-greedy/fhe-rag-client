@@ -55,7 +55,7 @@ def embed_documents(documents: List[Document]) -> Tuple[List[Document], float]:
 
     for document in documents:
         doc_start_time = time.time()
-        emb = embed_sentence(sentence=document.model_dump_json(exclude="embedding"))
+        emb = embed_sentence(sentence=document.document)
         document.embedding = emb
         doc_end_time = time.time()
         doc_embed_time = doc_end_time - doc_start_time
