@@ -79,7 +79,6 @@ def send_indices_and_receive_contexts(indices: List[int]) -> List[str]:
     for doc in received_documents:
         document = doc.document
         decrypted_document = decrypt_result(he, document)
-        decrypted_document = decrypted_document[:300]
         pure_document = _numpy_to_string(decrypted_document)
         contexts.append(pure_document)
 

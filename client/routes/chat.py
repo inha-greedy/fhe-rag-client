@@ -35,7 +35,7 @@ async def chat(query: str = Form(...), step: int = Form(...)):
     elif step == 3:  # send similarity and receive encrypted context
         similarities = pop_content("c2")
 
-        top_k = 2
+        top_k = 8
         indices = choose_indices(similarities=similarities, top_k=top_k)
         contexts = send_indices_and_receive_contexts(indices=indices)
 

@@ -2,6 +2,7 @@ import os
 import time
 from typing import List, Tuple
 import io
+import re
 import requests  # type: ignore # noqa: F401
 from dotenv import load_dotenv
 from fastapi import UploadFile
@@ -39,13 +40,23 @@ async def read_file(file: UploadFile) -> Tuple[str, int]:
 def split_content(str_content: str, chunk_size: int = 300) -> List[Document]:
     docs = []
     index = 0
+    start = 0
+    pattern = r"[ \n\.]"  # 공백 문자, 개행 문자, 마침표를 감지하는 정규식 패턴
 
-    while str_content:
-        chunk = str_content[:chunk_size]
-        str_content = str_content[chunk_size:]
+    while start < len(str_content):
+        end = min(start + chunk_size, len(str_content))
+        chunk = str_content[start:end]
+
+        # 공백 문자, 개행 문자, 마침표를 찾아 문자열을 나눕니다.
+        match = re.search(pattern, chunk[chunk_size:])
+        if match:
+            end = start + match.start() + chunk_size
+
+        chunk = str_content[start:end].strip()
         doc = Document(index=index, document=chunk)
         docs.append(doc)
         index += 1
+        start = end
 
     return docs
 

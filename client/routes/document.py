@@ -14,6 +14,8 @@ document_router = APIRouter()
 
 @document_router.post("/document")
 async def set_document(file: UploadFile = None, step: int = Form(...)):
+    chunk_size = 300  # chunk size(byte) of document
+
     if step == 1:  # read document
         str_content, size = await read_file(file=file)
         set_content("d1", str_content)
@@ -23,7 +25,6 @@ async def set_document(file: UploadFile = None, step: int = Form(...)):
     elif step == 2:  # parse document to make splitted_documents
         str_content = pop_content("d1")
 
-        chunk_size = 300
         splitted_contents = split_content(str_content=str_content, chunk_size=chunk_size)
 
         print(f"{splitted_contents=}")
