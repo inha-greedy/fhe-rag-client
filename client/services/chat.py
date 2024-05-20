@@ -8,9 +8,9 @@ from Pyfhel import PyCtxt, Pyfhel
 
 from ..models.document import PyCDocumentDto
 from ..models.similarity import PyCSimilarity, PyCSimilarityDto, Similarity
-from ..services.document import embed_documents, encrypt_documents, send_documents, split_content
-from ..services.key import load_he_from_key
-from ..services.session import set_content
+from .document import embed_documents, encrypt_documents, send_documents, split_content
+from .key import load_he_from_key
+from .session import set_content, get_user_id
 
 
 def get_similarities_from_server(query: str) -> List[PyCSimilarity]:
@@ -69,8 +69,12 @@ def send_indices_and_receive_contexts(indices: List[int]) -> List[str]:
     load_dotenv()
 
     server_url = os.getenv("SERVER_URL") or "EMPTY"
+    user_id = get_user_id()
+    headers = {"origin": str(user_id)}
 
-    response = requests.post(server_url + "/get-docs", json=indices, timeout=9).json()
+    response = requests.post(
+        server_url + "/get-docs", headers=headers, json=indices, timeout=9
+    ).json()
 
     received_documents = [PyCDocumentDto(**item).to_document(he=he) for item in response]
 

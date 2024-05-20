@@ -12,6 +12,7 @@ import docx
 from .key import encrypt_document, encrypt_ndarray, ctxt_to_str
 from ..models.document import Document, PyCDocumentDto
 from .embedding import embed_sentence
+from .session import get_user_id
 
 
 async def read_file(file: UploadFile) -> Tuple[str, int]:
@@ -108,7 +109,10 @@ def send_documents(uri: str, encrypted_documents: List[PyCDocumentDto]):
 
     server_url = os.getenv("SERVER_URL") or "EMPTY"
 
+    user_id = get_user_id()
+    headers = {"origin": str(user_id)}
+
     json = [doc.to_dict() for doc in encrypted_documents]
-    response = requests.post(server_url + uri, json=json, timeout=9)
+    response = requests.post(server_url + uri, headers=headers, json=json, timeout=9)
 
     return response

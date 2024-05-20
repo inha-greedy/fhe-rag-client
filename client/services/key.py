@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 from .storage import get_all_key_path, get_public_key_path
+from .session import get_user_id
 
 
 def load_he_from_key() -> Pyfhel:
@@ -60,7 +61,8 @@ def send_public_key_to_server():
         )
 
         # HTTP 요청 헤더 설정
-        headers = {"Content-Type": form_data.content_type}
+        user_id = get_user_id()
+        headers = {"Content-Type": form_data.content_type, "origin": str(user_id)}
 
         response = requests.post(
             server_url + "/sync-key", data=form_data, headers=headers, timeout=9
