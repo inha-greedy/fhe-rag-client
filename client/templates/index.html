@@ -703,6 +703,11 @@
               .then((data) => {
                 const encryptionLog = `(2/5) Document splitted. (num_documents: ${data?.num_documents})`;
                 addLog(encryptionLog);
+                const estimatedTime = Math.round(data?.num_documents * 1.5);
+                if (estimatedTime >= 20) {
+                  const estimatedTimeLog = `Estimated embedding time: ${estimatedTime} s`;
+                  addLog(estimatedTimeLog);
+                }
 
                 //
                 formData = new FormData();
