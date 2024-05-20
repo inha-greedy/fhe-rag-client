@@ -2,39 +2,42 @@
 세션 설정에 사용되는 비즈니스 로직을 담은 코드 페이지입니다.
 """
 
-from typing import Any
+import hashlib
+from typing import Any, Dict
 from fastapi import Request
 
-USER_MAP = {"sequence": 1000}
-CONTENT_MAP = {}
+_user_map: Dict[str, str] = {"user_id": "qqqq"}
+_content_map: Dict[str, Any] = {}
+
+
+def _string_to_hash(string, length=16):
+    hash_obj = hashlib.sha256(string.encode("utf-8"))
+    hex_dig = hash_obj.hexdigest()
+    return hex_dig[:length]
 
 
 def set_content(name: str, content):
     user_id = get_user_id()
-    map_name = str(user_id) + "_" + name
-    CONTENT_MAP[map_name] = content
+    map_name = user_id + "_" + name
+    _content_map[map_name] = content
 
 
 def pop_content(name: str) -> Any:
     user_id = get_user_id()
-    map_name = str(user_id) + "_" + name
+    map_name = user_id + "_" + name
 
     try:
-        return CONTENT_MAP.pop(map_name)
+        return _content_map.pop(map_name)
 
     except KeyError:
         return None
 
 
-def get_user_id() -> int:
+def get_user_id() -> str:
     """
     get user_id
     """
-    try:
-        return USER_MAP["user_id"]
-
-    except KeyError:
-        return 999
+    return _user_map.get("user_id")
 
 
 def set_user_id(request: Request):
@@ -44,14 +47,5 @@ def set_user_id(request: Request):
     host = request.headers.get("host")
     agent = request.headers.get("user-agent")
     user_key = f"host:{host}::agent:{agent}"
-    print(f"{user_key=}")
 
-    if user_key not in USER_MAP:
-        # sequence를 가져와 업데이트합니다
-        new_number = USER_MAP["sequence"] + 1
-        USER_MAP["sequence"] = new_number
-
-        # 가져온 sequence를 이용해 새 user를 등록합니다
-        USER_MAP[user_key] = new_number
-
-    USER_MAP["user_id"] = USER_MAP[user_key]
+    _user_map["user_id"] = _string_to_hash(user_key)

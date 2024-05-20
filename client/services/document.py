@@ -110,7 +110,7 @@ def send_documents(uri: str, encrypted_documents: List[PyCDocumentDto]):
     server_url = os.getenv("SERVER_URL") or "EMPTY"
 
     user_id = get_user_id()
-    headers = {"origin": str(user_id)}
+    headers = {"origin": user_id}
 
     json = [doc.to_dict() for doc in encrypted_documents]
     response = requests.post(server_url + uri, headers=headers, json=json, timeout=120)

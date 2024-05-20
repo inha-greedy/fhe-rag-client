@@ -70,7 +70,7 @@ def send_indices_and_receive_contexts(indices: List[int]) -> List[str]:
 
     server_url = os.getenv("SERVER_URL") or "EMPTY"
     user_id = get_user_id()
-    headers = {"origin": str(user_id)}
+    headers = {"origin": user_id}
 
     response = requests.post(
         server_url + "/get-docs", headers=headers, json=indices, timeout=120

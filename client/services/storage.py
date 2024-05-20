@@ -58,7 +58,7 @@ def _clear_storage() -> None:
 
 def _get_storage_path() -> str:
     user_id = get_user_id()
-    storage_path = os.path.join("client", "storage", str(user_id))
+    storage_path = os.path.join("client", "storage", user_id)
     if not os.path.exists(storage_path):
         os.makedirs(storage_path)
 

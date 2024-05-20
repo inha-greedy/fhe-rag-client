@@ -62,7 +62,7 @@ def send_public_key_to_server():
 
         # HTTP 요청 헤더 설정
         user_id = get_user_id()
-        headers = {"Content-Type": form_data.content_type, "origin": str(user_id)}
+        headers = {"Content-Type": form_data.content_type, "origin": user_id}
 
         response = requests.post(
             server_url + "/sync-key", data=form_data, headers=headers, timeout=120
