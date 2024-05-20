@@ -65,7 +65,7 @@ def send_public_key_to_server():
         headers = {"Content-Type": form_data.content_type, "origin": str(user_id)}
 
         response = requests.post(
-            server_url + "/sync-key", data=form_data, headers=headers, timeout=9
+            server_url + "/sync-key", data=form_data, headers=headers, timeout=120
         )
 
         return response

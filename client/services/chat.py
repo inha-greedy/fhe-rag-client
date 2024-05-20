@@ -73,7 +73,7 @@ def send_indices_and_receive_contexts(indices: List[int]) -> List[str]:
     headers = {"origin": str(user_id)}
 
     response = requests.post(
-        server_url + "/get-docs", headers=headers, json=indices, timeout=9
+        server_url + "/get-docs", headers=headers, json=indices, timeout=120
     ).json()
 
     received_documents = [PyCDocumentDto(**item).to_document(he=he) for item in response]
