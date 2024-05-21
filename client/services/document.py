@@ -72,7 +72,7 @@ def embed_documents(documents: List[Document]) -> Tuple[List[Document], float]:
         doc_end_time = time.time()
         doc_embed_time = doc_end_time - doc_start_time
         embed_times.append(doc_embed_time)
-        print(f"embedding completed, ({document.index + 1}/{len(documents)})")
+        print(f"embedding completed. ({document.index + 1}/{len(documents)})")
 
     avg_embed_time = sum(embed_times) / len(embed_times) if embed_times else 0.0
 
