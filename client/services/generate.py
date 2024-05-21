@@ -14,20 +14,28 @@ Query: {question}
 Answer in Korean:"""
 
 # LLaMA-2 style prompt
-LLAMA2_PROMPT = """<<SYS>>
-질문에 답하는 인공지능 어시스턴트입니다. 다음의 문맥 정보를 활용하여 질문에 답변하세요.
-답변할 수 없다면 "모르겠습니다"라고 말하세요. 답변은 최대 3문장으로 간결하게 해주세요.
-<</SYS>>
+LLAMA3_PROMPT = """<|start_header_id|>system<|end_header_id|>
 
-[INST]
-질문: {question}
+You are an assistant for answering questions in Korean.
+You are given the extracted parts of a long document and a question. Provide a conversational answer in Korean.
+If you don't know the answer, just say "I do not know." Don't make up an answer.<|eot_id|>
 
-문맥: {context}
-[/INST]
-답변:
-"""
+<|start_header_id|>user<|end_header_id|>
+using the retrieved documents we will prompt the model to generate our responses
+Question:{question}
+Context:
+{context}<|eot_id|>
 
-LLAMA2_SEQUENCE = ["[INST]", "[/INST]"]
+<|start_header_id|>assistant<|end_header_id|>
+Answer in Korean:"""
+
+LLAMA3_SEQUENCE = [
+    "<|eot_id|>",
+    "<|start_header_id|>",
+    "<|end_header_id|>",
+    "<|begin_of_text|>",
+    "<|end_of_text|>",
+]
 
 
 def generate_answer(query: str, contexts: List[str]) -> str:
@@ -39,7 +47,8 @@ def generate_answer(query: str, contexts: List[str]) -> str:
     openai_api_base = os.getenv("OPENAI_API_BASE") or "EMPTY"
 
     if openai_api_key == "EMPTY":  # openai-api-compatible LLM server
-        rag_prompt = LLAMA2_PROMPT
+        rag_prompt = LLAMA3_PROMPT
+        stop_sequences = LLAMA3_SEQUENCE
 
     else:  # openai api
         openai_api_base = "https://api.openai.com"
@@ -48,7 +57,7 @@ def generate_answer(query: str, contexts: List[str]) -> str:
     model = "gpt-3.5-turbo-instruct"
     max_tokens = 512
     temperature = 0.2
-    # stop_sequences = LLAMA2_SEQUENCE
+    # stop_sequences = LLAMA3_SEQUENCE
 
     context = "\n".join(contexts)
 
