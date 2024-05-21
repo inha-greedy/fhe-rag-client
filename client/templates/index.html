@@ -6,7 +6,7 @@
     <title>CKKS RAG Agent</title>
     <link
       rel="icon"
-      href="https://avatars.githubusercontent.com/u/165638702?s=200&v=4"
+      href="https://avatars.githubusercontent.com/u/165638702?s=64&v=4"
       type="image/png"
     />
     <meta
@@ -535,6 +535,8 @@
         typeText();
       }
       function sendRequest(formData, uri) {
+        inputField.disabled = true; // Disable the input field
+
         return fetch(CLIENT_HOST_URL + uri, {
           method: "POST",
           body: formData,
@@ -547,6 +549,9 @@
           .catch((error) => {
             console.error(`Error (step ${formData.get("step")}):`, error);
             throw error;
+          })
+          .finally(() => {
+            inputField.disabled = false; // Enable the input field
           });
       }
 
@@ -765,7 +770,6 @@
           // Add the user's message to the chat window
           addUserMessage(message);
           inputField.value = ""; // Clear the input field
-          inputField.disabled = true; // Disable the input field
 
           let formData = new FormData();
           formData.append("query", message);
@@ -818,11 +822,9 @@
               data.answer ||= "I'm sorry, I didn't understand that.";
 
               addBotMessage(data.answer);
-              inputField.disabled = false;
             })
             .catch((error) => {
               console.error("Error:", error);
-              inputField.disabled = false;
             });
         }
       }
