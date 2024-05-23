@@ -1,4 +1,5 @@
 import os
+import json
 from typing import List
 
 import requests  # type: ignore # noqa: F401
@@ -68,11 +69,11 @@ def generate_answer(query: str, contexts: List[str]) -> str:
 
     data["model"] = model
     data["prompt"] = formatted_prompt
-    data["max_tokens"] = max_tokens
-    data["temperature"] = temperature
+    data["max_tokens"] = str(max_tokens)
+    data["temperature"] = str(temperature)
 
     if not stop_sequences is None:
-        data["stop"] = stop_sequences
+        data["stop"] = json.dumps(stop_sequences)
 
     response = requests.post(url=url, headers=headers, json=data, timeout=120).json()
     print(f"{response=}")

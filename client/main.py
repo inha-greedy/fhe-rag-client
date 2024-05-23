@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .routes.chat import chat_router
 from .routes.document import document_router
 from .routes.key import key_router
+from .routes.example import example_router
 from .services.session import set_user_id
 
 app = FastAPI()
@@ -28,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent
 app.include_router(chat_router)
 app.include_router(document_router)
 app.include_router(key_router)
-
+app.include_router(example_router)
 
 # HTML 파일 로드
 with open(BASE_DIR / "templates" / "index.html", "r", encoding="utf-8") as f:

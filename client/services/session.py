@@ -37,7 +37,7 @@ def get_user_id() -> str:
     """
     get user_id
     """
-    return _user_map.get("user_id")
+    return _user_map.get("user_id") or "EMPTY"
 
 
 def set_user_id(request: Request):
