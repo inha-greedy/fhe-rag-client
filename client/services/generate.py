@@ -69,8 +69,8 @@ def generate_answer(query: str, contexts: List[str]) -> str:
 
     data["model"] = model
     data["prompt"] = formatted_prompt
-    data["max_tokens"] = str(max_tokens)
-    data["temperature"] = str(temperature)
+    data["max_tokens"] = max_tokens
+    data["temperature"] = temperature
 
     if not stop_sequences is None:
         data["stop"] = json.dumps(stop_sequences)
