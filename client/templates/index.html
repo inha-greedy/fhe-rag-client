@@ -687,7 +687,12 @@
           link.href = downloadUrl;
 
           const timestamp = getTimestamp("file");
-          link.download = `key_${timestamp}.zip`;
+          const keyName = `key_${timestamp}.zip`;
+          link.download = keyName;
+
+          const keyInfoElement = document.getElementById("keyName");
+          keyInfoElement.innerText = keyName;
+
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
@@ -712,7 +717,7 @@
           if (file) {
             // 이전 정보 초기화
             const keyInfoElement = document.getElementById("keyName");
-            keyInfoElement.innerHTML = `${file.name}`;
+            keyInfoElement.innerText = `${file.name}`;
 
             const imgElement = document.createElement("img");
             const keyIcon = document.getElementById("keyIcon");
@@ -720,6 +725,8 @@
             keyIcon.replaceChild(imgElement, imgIcon);
 
             // ****************************************
+            const encryptionLog = `Uploading CKKS Key ...`;
+            addLog(encryptionLog);
 
             let formData = new FormData();
             formData.append("file", file);
