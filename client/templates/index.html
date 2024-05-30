@@ -53,6 +53,12 @@
         padding-bottom: 2px;
         margin: 0 0 10px 0;
       }
+      h5 {
+        font-size: 14px;
+        font-weight: bold;
+        padding-bottom: 2px;
+        margin: 0 0 6px 0;
+      }
 
       .header {
         font-size: 20px;
@@ -82,7 +88,7 @@
         border: 2px dashed #bbb;
         border-radius: 8px;
         text-align: center;
-        padding: 20px;
+        padding: 16px;
         box-sizing: border-box;
         position: relative;
         display: flex;
@@ -116,9 +122,8 @@
         opacity: 0;
         cursor: pointer;
       }
-
-      .icon {
-        margin-bottom: 10px;
+      .fractal {
+        width: 100%;
       }
 
       .button-container {
@@ -129,6 +134,9 @@
         width: 10%;
       }
 
+      #ckksKeyInput {
+        width: 0px;
+      }
       .button {
         color: white;
         padding: 5px 10px;
@@ -141,18 +149,26 @@
       .button#resetKeyButton {
         background-color: salmon;
       }
-      .button#exportKeyButton {
+      .button#downloadKeyButton {
         background-color: green;
       }
-
-      .button:hover {
+      .button#uploadKeyButton {
         background-color: #0056b3;
       }
+
       .encryption-progress-container {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
       }
+      #keyIcon {
+        width: 96px;
+        height: 96px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
       .encryption-progress {
         background-color: black;
         color: white;
@@ -357,35 +373,19 @@
         <div class="left-pane">
           <div class="upload-container">
             <div class="button-container">
-              <button class="button" id="exportKeyButton">Export Key</button>
+              <button class="button" id="uploadKeyButton">Upload Key</button>
               <button class="button" id="resetKeyButton">Reset Key</button>
             </div>
 
+            <input type="file" id="ckksKeyInput" accept=".zip" />
             <div class="upload-box">
-              <div class="icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <rect
-                    x="3"
-                    y="11"
-                    width="18"
-                    height="11"
-                    rx="2"
-                    ry="2"
-                  ></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
+              <h5 id="keyName">Key Fingerprint</h5>
+              <div id="keyIcon">
+                <img />
               </div>
-              <h4>Upload Key</h4>
-              <input type="file" id="ckksKeyInput" accept=".zip" />
-              <div id="keyInfo"></div>
+              <button class="button" id="downloadKeyButton">
+                Download Key
+              </button>
             </div>
             <div class="upload-box">
               <div class="icon">
@@ -471,18 +471,14 @@
         const encryptionLog = `Synchronizing CKKS Key ...`;
         addLog(encryptionLog);
 
+        // ****************************************
+
         let formData = new FormData();
         formData.append("step", 1);
 
-        sendRequest(formData, "/key")
+        syncKey(formData)
           .then((data) => {
-            //
-            formData = new FormData();
-            formData.append("step", 2);
-            return sendRequest(formData, "/key");
-          })
-          .then((data) => {
-            const encryptionLog = `CKKS RAG Agent Initialized.`;
+            const encryptionLog = `(2/2) CKKS RAG Agent Initialized.`;
             addLog(encryptionLog);
 
             addBotMessage("Hello. How can I help you?");
@@ -493,6 +489,8 @@
             const encryptionLog = "storage server not responding.";
             addLog(encryptionLog);
           });
+
+        // ****************************************
       }
 
       function getTimestamp(type = "log") {
@@ -582,7 +580,13 @@
           method: "POST",
           body: formData,
         })
-          .then((response) => response.json())
+          .then((response) => {
+            const contentType = response.headers.get("Content-Type");
+
+            if (contentType.includes("image/png")) return response.blob();
+
+            return response.json();
+          })
           .then((data) => {
             console.log(`Success (step ${formData.get("step")}):`, data);
             return data;
@@ -597,23 +601,49 @@
             spinner.style.display = "none";
           });
       }
+
+      async function syncKey(formData) {
+        return sendRequest(formData, "/key").then((blob) => {
+          let encryptionLog = `(1/2) CKKS key initialized in the client.`;
+          addLog(encryptionLog);
+
+          // add image
+          const imageUrl = URL.createObjectURL(blob);
+          console.log("imageUrl:", imageUrl);
+          const imgElement = document.createElement("img");
+          imgElement.className = "fractal";
+          imgElement.src = imageUrl;
+          imgElement.alt = "Key Fractal Image";
+
+          const keyIcon = document.getElementById("keyIcon");
+          const svgIcon = keyIcon.querySelector("img"); // img 아이콘 요소 가져오기
+          keyIcon.replaceChild(imgElement, svgIcon);
+          //
+          formData = new FormData();
+          formData.append("step", 2);
+          return sendRequest(formData, "/key");
+        });
+      }
       const resetKeyButton = document.getElementById("resetKeyButton");
       resetKeyButton.addEventListener("click", async () => {
         if (!confirm("sure to reset key?")) return;
+        // 이전 정보 초기화
+        const keyInfoElement = document.getElementById("keyName");
+        keyInfoElement.innerHTML = "Key Fingerprint";
+
+        const imgElement = document.createElement("img");
+        const keyIcon = document.getElementById("keyIcon");
+        const imgIcon = keyIcon.querySelector("img");
+        keyIcon.replaceChild(imgElement, imgIcon);
+
         let formData = new FormData();
         formData.append("step", 1);
         const encryptionLog = `Resetting CKKS key ...`;
         addLog(encryptionLog);
 
-        sendRequest(formData, "/key")
+        syncKey(formData)
           .then((data) => {
-            //
-            formData = new FormData();
-            formData.append("step", 2);
-            return sendRequest(formData, "/key");
-          })
-          .then((data) => {
-            const encryptionLog = `CKKS key reset completed.`;
+            const encryptionLog = `(2/2) CKKS key reset on storage-server.`;
             addLog(encryptionLog);
           })
           .catch((error) => {
@@ -624,14 +654,13 @@
           });
       });
 
-      const exportKeyButton = document.getElementById("exportKeyButton");
+      const downloadKeyButton = document.getElementById("downloadKeyButton");
 
-      exportKeyButton.addEventListener("click", async () => {
+      downloadKeyButton.addEventListener("click", async () => {
         if (!confirm("sure to download key?")) return;
         try {
-          const response = await fetch(CLIENT_HOST_URL + "/key", {
-            method: "GET",
-          });
+          // download key
+          const response = await fetch(CLIENT_HOST_URL + "/key");
 
           if (!response.ok) {
             throw new Error("Failed to fetch key file");
@@ -654,14 +683,19 @@
       });
 
       // CKKS Key Input
+
+      document
+        .getElementById("uploadKeyButton")
+        .addEventListener("click", function () {
+          document.getElementById("ckksKeyInput").click();
+        });
+
       document
         .getElementById("ckksKeyInput")
         .addEventListener("change", function (event) {
           const file = event.target.files[0];
-          const fileInfoElement = document.getElementById("keyInfo");
 
           if (file) {
-            fileInfoElement.textContent = ""; // 이전 정보 초기화
             const fileSize = file.size;
             let fileSizeString;
 
@@ -676,24 +710,22 @@
               fileSizeString = `${fileSize} B`;
             }
 
-            fileInfoElement.textContent = `${file.name} (${fileSizeString})`;
+            // 이전 정보 초기화
+            const keyInfoElement = document.getElementById("keyName");
+            keyInfoElement.innerHTML = `${file.name}<br/>(${fileSizeString})`;
+
+            const imgElement = document.createElement("img");
+            const keyIcon = document.getElementById("keyIcon");
+            const imgIcon = keyIcon.querySelector("img");
+            keyIcon.replaceChild(imgElement, imgIcon);
+
+            // ****************************************
 
             let formData = new FormData();
             formData.append("file", file);
             formData.append("step", 1);
 
-            sendRequest(formData, "/key")
-              .then((data) => {
-                let encryptionLog = `(1/2) CKKS key uploaded.`;
-                if (data.key_name)
-                  encryptionLog += ` (key_name: ${data.key_name})`;
-                addLog(encryptionLog);
-
-                //
-                formData = new FormData();
-                formData.append("step", 2);
-                return sendRequest(formData, "/key");
-              })
+            syncKey(formData)
               .then((data) => {
                 const encryptionLog = `(2/2) CKKS key synchronized to storage server.`;
                 addLog(encryptionLog);
@@ -704,6 +736,8 @@
                 const encryptionLog = "Connection Failed: " + error;
                 addLog(encryptionLog);
               });
+
+            // ****************************************
           }
         });
 
