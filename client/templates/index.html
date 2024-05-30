@@ -131,11 +131,13 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        width: 10%;
+        width: 8%;
       }
 
       #ckksKeyInput {
         width: 0px;
+        height: 0px;
+        visibility: hidden;
       }
       .button {
         color: white;
@@ -144,18 +146,25 @@
         border: none;
         border-radius: 5px;
         cursor: pointer;
+        align-items: center;
         transition: background-color 0.3s ease;
       }
       .button#resetKeyButton {
+        width: 67px;
         background-color: salmon;
       }
       .button#downloadKeyButton {
         background-color: green;
       }
       .button#uploadKeyButton {
-        background-color: #0056b3;
+        width: 67px;
+        background-color: white;
+        border: 1px solid #0056b3;
+        color: #0056b3;
       }
-
+      .button .icon {
+        margin: auto;
+      }
       .encryption-progress-container {
         flex-grow: 1;
         display: flex;
@@ -365,6 +374,10 @@
         fill: currentColor;
       }
     </style>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
   </head>
   <body>
     <div class="container">
@@ -372,22 +385,24 @@
       <div class="content">
         <div class="left-pane">
           <div class="upload-container">
-            <div class="button-container">
-              <button class="button" id="uploadKeyButton">Upload Key</button>
-              <button class="button" id="resetKeyButton">Reset Key</button>
-            </div>
-
-            <input type="file" id="ckksKeyInput" accept=".zip" />
             <div class="upload-box">
+              <input type="file" id="ckksKeyInput" accept=".zip" />
               <h5 id="keyName">Key Fingerprint</h5>
-              <div id="keyIcon">
-                <img />
-              </div>
+              <div id="keyIcon"><img /></div>
               <button class="button" id="downloadKeyButton">
                 Download Key
               </button>
             </div>
+            <div class="button-container">
+              <button class="button" id="uploadKeyButton">
+                <i class="fas fa-upload icon"></i> Upload Key
+              </button>
+              <button class="button" id="resetKeyButton">
+                <i class="fas fa-redo icon"></i> Reset Key
+              </button>
+            </div>
             <div class="upload-box">
+              <h4>Upload Document</h4>
               <div class="icon">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -407,7 +422,6 @@
                   <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
               </div>
-              <h4>Upload Document</h4>
               <input type="file" id="documentInput" accept=".pdf,.docx,.txt" />
               <div id="documentInfo"></div>
             </div>
@@ -629,7 +643,7 @@
         if (!confirm("sure to reset key?")) return;
         // 이전 정보 초기화
         const keyInfoElement = document.getElementById("keyName");
-        keyInfoElement.innerHTML = "Key Fingerprint";
+        keyInfoElement.innerText = "Key Fingerprint";
 
         const imgElement = document.createElement("img");
         const keyIcon = document.getElementById("keyIcon");
@@ -696,23 +710,9 @@
           const file = event.target.files[0];
 
           if (file) {
-            const fileSize = file.size;
-            let fileSizeString;
-
-            if (fileSize >= 1024 * 1024) {
-              // MB 단위
-              fileSizeString = `${(fileSize / (1024 * 1024)).toFixed(2)} MB`;
-            } else if (fileSize >= 1024) {
-              // KB 단위
-              fileSizeString = `${(fileSize / 1024).toFixed(2)} KB`;
-            } else {
-              // Byte 단위
-              fileSizeString = `${fileSize} B`;
-            }
-
             // 이전 정보 초기화
             const keyInfoElement = document.getElementById("keyName");
-            keyInfoElement.innerHTML = `${file.name}<br/>(${fileSizeString})`;
+            keyInfoElement.innerHTML = `${file.name}`;
 
             const imgElement = document.createElement("img");
             const keyIcon = document.getElementById("keyIcon");
@@ -765,7 +765,7 @@
               fileSizeString = `${fileSize} B`;
             }
 
-            fileInfoElement.textContent = `${file.name} (${fileSizeString})`;
+            fileInfoElement.innerHTML = `${file.name}<br/>(${fileSizeString})`;
 
             let formData = new FormData();
             formData.append("file", file);
