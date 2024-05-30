@@ -96,10 +96,6 @@
         align-items: center;
         justify-content: center;
         transition: border-color 0.3s ease;
-        cursor: pointer;
-      }
-      .upload-box:hover {
-        border-color: #888;
       }
       .upload-box .icon {
         width: 64px;
@@ -120,12 +116,10 @@
         width: 100%;
         height: 100%;
         opacity: 0;
-        cursor: pointer;
       }
       .fractal {
         width: 100%;
       }
-
       .button-container {
         display: flex;
         flex-direction: column;
@@ -134,7 +128,8 @@
         width: 8%;
       }
 
-      #ckksKeyInput {
+      #ckksKeyInput,
+      #documentInput {
         width: 0px;
         height: 0px;
         visibility: hidden;
@@ -149,15 +144,20 @@
         align-items: center;
         transition: background-color 0.3s ease;
       }
+      .button#downloadKeyButton {
+        background-color: green;
+      }
       .button#resetKeyButton {
         width: 67px;
         background-color: salmon;
       }
-      .button#downloadKeyButton {
-        background-color: green;
-      }
       .button#uploadKeyButton {
         width: 67px;
+        background-color: white;
+        border: 1px solid #0056b3;
+        color: #0056b3;
+      }
+      .button#uploadDocumentButton {
         background-color: white;
         border: 1px solid #0056b3;
         color: #0056b3;
@@ -170,7 +170,8 @@
         display: flex;
         flex-direction: column;
       }
-      #keyIcon {
+      #keyIcon,
+      #documentIcon {
         width: 110px;
         height: 110px;
         display: flex;
@@ -402,28 +403,12 @@
               </button>
             </div>
             <div class="upload-box">
-              <h4>Upload Document</h4>
-              <div class="icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path
-                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                  ></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                  <polyline points="10 9 9 9 8 9"></polyline>
-                </svg>
-              </div>
               <input type="file" id="documentInput" accept=".pdf,.docx,.txt" />
-              <div id="documentInfo"></div>
+              <h5 id="documentName">Select Document</h5>
+              <div id="documentIcon"><img /></div>
+              <button class="button" id="uploadDocumentButton">
+                Encrypt Document
+              </button>
             </div>
           </div>
           <div class="encryption-progress-container">
@@ -630,8 +615,8 @@
           imgElement.alt = "Key Fractal Image";
 
           const keyIcon = document.getElementById("keyIcon");
-          const svgIcon = keyIcon.querySelector("img"); // img 아이콘 요소 가져오기
-          keyIcon.replaceChild(imgElement, svgIcon);
+          const imgIcon = keyIcon.querySelector("img"); // img 아이콘 요소 가져오기
+          keyIcon.replaceChild(imgElement, imgIcon);
           //
           formData = new FormData();
           formData.append("step", 2);
@@ -708,7 +693,6 @@
         .addEventListener("click", function () {
           document.getElementById("ckksKeyInput").click();
         });
-
       document
         .getElementById("ckksKeyInput")
         .addEventListener("change", function (event) {
@@ -749,11 +733,18 @@
         });
 
       // Document Input
+
+      document
+        .getElementById("uploadDocumentButton")
+        .addEventListener("click", function () {
+          document.getElementById("documentInput").click();
+        });
+
       document
         .getElementById("documentInput")
         .addEventListener("change", function (event) {
           const file = event.target.files[0];
-          const fileInfoElement = document.getElementById("documentInfo");
+          const fileInfoElement = document.getElementById("documentName");
 
           if (file) {
             fileInfoElement.textContent = ""; // 이전 정보 초기화
@@ -819,6 +810,21 @@
               .then((data) => {
                 const encryptionLog = `(4/5) Documents encrypted by CKKS. (avg_encrypt_time: ${data.avg_encrypt_time} s)`;
                 addLog(encryptionLog);
+
+                // enroll image
+
+                const keyImgIcon = document
+                  .getElementById("keyIcon")
+                  .querySelector("img");
+                const imgElement = document.createElement("img");
+                imgElement.className = "fractal";
+                imgElement.src = keyImgIcon.src;
+                imgElement.alt = "Key Fractal Image";
+
+                const documentIcon = document.getElementById("documentIcon");
+                const ImgIcon = documentIcon.querySelector("img");
+
+                documentIcon.replaceChild(imgElement, ImgIcon);
 
                 //
                 formData = new FormData();
