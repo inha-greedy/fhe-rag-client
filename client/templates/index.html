@@ -170,13 +170,17 @@
         display: flex;
         flex-direction: column;
       }
-      #keyIcon,
-      #documentIcon {
+      .image-box {
         width: 110px;
         height: 110px;
+        border: 1px solid #e0e0e0;
+        background-color: #ffffff;
         display: flex;
         justify-content: center;
         align-items: center;
+        font-size: 12px;
+        color: #999999;
+        transition: all 0.3s ease;
       }
 
       .encryption-progress {
@@ -389,7 +393,7 @@
             <div class="upload-box">
               <input type="file" id="ckksKeyInput" accept=".zip" />
               <h5 id="keyName">Key Fingerprint</h5>
-              <div id="keyIcon"><img /></div>
+              <div class="image-box" id="keyIcon"><img /></div>
               <button class="button" id="downloadKeyButton">
                 Download Key
               </button>
@@ -405,7 +409,7 @@
             <div class="upload-box">
               <input type="file" id="documentInput" accept=".pdf,.docx,.txt" />
               <h5 id="documentName">Select Document</h5>
-              <div id="documentIcon"><img /></div>
+              <div class="image-box" id="documentIcon"><img /></div>
               <button class="button" id="uploadDocumentButton">
                 Encrypt Document
               </button>
