@@ -384,7 +384,7 @@
           <div class="upload-container">
             <div class="upload-box">
               <input type="file" id="ckksKeyInput" accept=".zip" />
-              <h5 id="keyName">Key Fingerprint</h5>
+              <h5 id="keyName">Key Visualization</h5>
               <div class="image-box" id="keyIcon"><img /></div>
               <button class="button" id="downloadKeyButton">
                 Download Key
@@ -419,7 +419,7 @@
               Chat with Document
               <span
                 class="powered-by"
-                onclick="window.open('https://huggingface.co/nvidia/Llama3-ChatQA-1.5-8B', '_blank')"
+                onclick="window.open('https:\/\/huggingface.co/nvidia/Llama3-ChatQA-1.5-8B', '_blank')"
                 ><img
                   src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg"
                   alt="HuggingFace"
@@ -625,7 +625,7 @@
         if (!confirm("sure to reset key?")) return;
         // 이전 정보 초기화
         const keyInfoElement = document.getElementById("keyName");
-        keyInfoElement.innerText = "Key Fingerprint";
+        keyInfoElement.innerText = "Key Visualization";
 
         const imgElement = document.createElement("img");
         const keyIcon = document.getElementById("keyIcon");
