@@ -98,6 +98,8 @@ def encrypt_documents(documents: List[Document]) -> Tuple[List[PyCDocumentDto], 
         )
 
         encrypted_documents.append(encrypted_document)
+        print(f"encrypt completed. ({document.index + 1}/{len(documents)})")
+
 
     avg_encrypt_time = sum(encrypt_times) / len(encrypt_times) if encrypt_times else 0.0
 

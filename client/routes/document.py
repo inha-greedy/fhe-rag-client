@@ -14,7 +14,7 @@ document_router = APIRouter()
 
 @document_router.post("/document")
 async def set_document(file: UploadFile = None, step: int = Form(...)):
-    chunk_size = 240  # chunk size(byte) of document
+    chunk_size = 320  # chunk size(byte) of document
 
     if step == 1:  # read document
         str_content, size = await read_file(file=file)

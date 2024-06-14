@@ -7,9 +7,9 @@ example_router = APIRouter()
 
 @example_router.get("/example")
 async def download_example():
-    melon_content = os.path.join("client", "templates", "assets", "melon-top-100.txt")
+    melon_content = os.path.join("client", "templates", "assets", "자산평가-요약.txt")
     try:
-        headers = {"Content-Disposition": 'attachment; filename="melon-top-100.txt"'}
+        headers = {"Content-Disposition": 'attachment; filename="자산평가-요약.txt"'}
         return FileResponse(melon_content, headers=headers)
 
     except FileNotFoundError as e:
